@@ -8,7 +8,7 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: 8080
       protocol: TCP
       name: jhipster-online
     - port: 8081
@@ -16,4 +16,4 @@ spec:
       name: jdl-studio
       targetPort: 8081      
   selector:
-    {{- include "jhipster-online.selectorLabels" . | nindent 4 }}
+    app: {{ .Chart.Name }}

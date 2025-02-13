@@ -88,12 +88,12 @@ resources: {}
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /jdl-studio/
+    port: 8080
 readinessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /jdl-studio/
+    port: 8080
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -131,4 +131,3 @@ env:
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
-  OPENSHIFT_TEKTON_URL-PIPELINE: https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-pipeline-quarkus.yaml

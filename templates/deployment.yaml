@@ -4,13 +4,15 @@ metadata:
   name: {{ include "jhipster-online.fullname" . }}
   labels:
     {{- include "jhipster-online.labels" . | nindent 4 }}
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"mariadb"}]'        
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "jhipster-online.selectorLabels" . | nindent 6 }}
+      app: {{ .Chart.Name }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -45,8 +47,13 @@ spec:
           {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}              
           ports:
-            - name: http
+            - name: jhipster-online
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           {{- with .Values.livenessProbe }}
