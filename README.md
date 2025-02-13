@@ -13,6 +13,39 @@
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/capture.PNG" width="900" title="Run On Openshift">
 </p>
 
+Stack with JHipster Online on . 
+
+This stack include:
+ - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. 
+ - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
+ - JDL Studio for add JDL files by PR on your repo.
+
+OAuth GitHub configure
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/sing-repo.PNG" width="900" title="Run On Openshift">
+</p>
+
+JDL Studio
+
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/jdl-studio.PNG" width="900" title="Run On Openshift">
+</p>
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/JDL-Model.PNG" width="900" title="Run On Openshift">
+</p>
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/JDL-Model-2.PNG" width="900" title="Run On Openshift">
+</p>
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/JDL-Model-3.PNG" width="900" title="Run On Openshift">
+</p>
+
+Try on Red Hat OpenShift Dev Spaces, search "JHipster Online" and see the source.
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/try-source.PNG" width="900" title="Run On Openshift">
+</p>
+
+
 # Installation
 
 ## Charts Values Parameters

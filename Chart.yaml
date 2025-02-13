@@ -1,6 +1,10 @@
 apiVersion: v2
 name: jhipster-online
-description: A Helm chart for Kubernetes
+description: "Stack with JHipster Online on Red Hat OpenShift. 
+            This stack include:
+             - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. 
+             - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
+             - JDL Studio for add JDL models files by PR on your repo."
 
 # A chart can be either an 'application' or a 'library' chart.
 #
