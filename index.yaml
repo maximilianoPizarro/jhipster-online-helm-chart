@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  jhipster-online:
+  - apiVersion: v2
+    appVersion: 2.33.0
+    created: "2025-02-13T15:52:50.34273008Z"
+    description: A Helm chart for Kubernetes
+    digest: 583add700077cfb3cd25a92bbf67e39de6604230f4125d6c4fe922b3b4268f3e
+    home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
+    icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
+    keywords:
+    - jhipster
+    - spring
+    - openshift
+    maintainers:
+    - email: maximiliano.pizarro.5@gmail.com
+      name: Maximiliano Pizarro
+      url: http://www.linkedin.com/in/maximiliano-gregorio-pizarro-consultor-it
+    name: jhipster-online
+    type: application
+    urls:
+    - charts/jhipster-online-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-02-13T15:52:50.34159466Z"
