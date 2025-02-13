@@ -9,6 +9,10 @@
 <a href="https://artifacthub.io/packages/search?repo=jhipster-online"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/jhipster-online" alt="Artifact Hub" /></a>
 </p>
 
+<p align="left">
+<img src="https://github.com/maximilianoPizarro/jhipster-online/blob/main/image/capture.PNG?raw=true" width="900" title="Run On Openshift">
+</p>
+
 # Installation
 
 ## Charts Values Parameters
@@ -28,7 +32,7 @@ helm install jhipster-online jhipster-online/jhipster-online
 
 ```bash
 Example:
-helm install jhipster-online jhipster-online/jhipster-online --version 0.1.1
+helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0
 ```
 
 
