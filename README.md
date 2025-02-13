@@ -23,12 +23,12 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 ## Install Chart with parameters
 
 ```bash
-helm install jhipster-online jhipster-online/jhipster-online --version VERSION --set route.host="Your-WilcardDNS-hostname",env.EXTERNAL_URL="Your-WilcardDNS-with-https"
+helm install jhipster-online jhipster-online/jhipster-online 
 ```
 
 ```bash
 Example:
-helm install jhipster-online jhipster-online/jhipster-online --version 0.1.1 --set route.host="jhipster-online-maximilianopizarro5-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com",env.EXTERNAL_URL="https://jhipster-online-maximilianopizarro5-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com"
+helm install jhipster-online jhipster-online/jhipster-online --version 0.1.1
 ```
 
 

@@ -22,9 +22,9 @@ fullnameOverride: ""
 # This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
   # Specifies whether a service account should be created
-  create: true
+  create: false
   # Automatically mount a ServiceAccount's API credentials?
-  automount: true
+  automount: false
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
@@ -131,3 +131,24 @@ env:
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
+  SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/jhipsteronline
+  SPRING_DATASOURCE_USERNAME: jhipster
+  SPRING_DATASOURCE_PASSWORD: jhipster  
+
+#global:
+#  security:
+#    allowInsecureImages: true  
+
+#mariadb:
+#  image:
+#    registry: registry.redhat.io
+#    repository: rhel8/mariadb-103
+#    tag: latest    
+#  auth:
+#    rootPassword: "jhipster"
+#    user: "jhipster"
+#    password: "jhipster"
+#    database: "jhipsteronline"
+#  primary:
+#    persistence:
+#      enabled: false

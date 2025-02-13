@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ include "jhipster-online.fullname" . }}
+  name: nginx-conf
   labels:
     {{- include "jhipster-online.labels" . | nindent 4 }}
 data:

@@ -37,7 +37,7 @@ spec:
       volumes:
         - name: nginx-conf-jh-volume
           configMap:
-            name: jhipster-online
+            name: nginx-conf
             defaultMode: 420      
       containers:
         - name: {{ .Chart.Name }}

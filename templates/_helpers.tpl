@@ -49,6 +49,7 @@ Selector labels
 {{- define "jhipster-online.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "jhipster-online.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+app: jhipster-online
 {{- end }}
 
 {{/*
