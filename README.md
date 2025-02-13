@@ -10,7 +10,7 @@
 </p>
 
 <p align="left">
-<img src="https://github.com/maximilianoPizarro/jhipster-online/blob/main/image/capture.PNG?raw=true" width="900" title="Run On Openshift">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/capture.PNG" width="900" title="Run On Openshift">
 </p>
 
 # Installation
