@@ -13,19 +13,15 @@
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/capture.PNG" width="900" title="Run On Openshift">
 </p>
 
-Stack with JHipster Online on . 
+Stack with JHipster Online on Red Hat OpenShift. 
 
 This stack include:
  - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. 
  - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
  - JDL Studio for add JDL files by PR on your repo.
 
-OAuth GitHub configure
-<p align="left">
-<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/sing-repo.PNG" width="900" title="Run On Openshift">
-</p>
 
-JDL Studio
+## JDL Studio
 
 <p align="left">
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/jdl-studio.PNG" width="900" title="Run On Openshift">
@@ -40,16 +36,26 @@ JDL Studio
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/JDL-Model-3.PNG" width="900" title="Run On Openshift">
 </p>
 
-Try on Red Hat OpenShift Dev Spaces, search "JHipster Online" and see the source.
-<p align="left">
-<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/try-source.PNG" width="900" title="Run On Openshift">
-</p>
+
 
 
 # Installation
 
 ## Charts Values Parameters
 
+## OAuth GitHub configure
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/sing-repo.PNG" width="900" title="Run On Openshift">
+</p>
+
+```bash
+-->values.yaml
+...
+  APPLICATION_GITHUB_HOST: https://github.com
+  APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
+  APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
+...
+```
 
 ## Add repository
 
@@ -60,13 +66,17 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 ## Install Chart with parameters
 
 ```bash
-helm install jhipster-online jhipster-online/jhipster-online 
+helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f values.yaml
 ```
 
 ```bash
 Example:
-helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0
+helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f values.yaml
 ```
+
+NOTE.
+jhipster-online name is mandatory, not use my-jhipster-online sample name. If you use other name change the configmap ngnix and rollout jhipster-online deployment.
+
 
 
 ## Uninstall Chart
@@ -75,14 +85,35 @@ helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0
 helm uninstall jhipster-online
 ```
 
-## Package Info
-
-- [GitHub Page](https://maximilianopizarro.github.io/jhipster-online-helm-chart/)
-- [GitHub Repo](https://github.com/maximilianoPizarro/jhipster-online-helm-chart)
-
 ## Package Steps
 
 ```bash
 helm package -u . -d charts
 helm repo index .
 ```
+
+## Package Info
+
+- [GitHub Page](https://maximilianopizarro.github.io/jhipster-online-helm-chart/)
+- [GitHub Source Repo](https://github.com/redhat-developer-demos/jhipster-online)
+
+Try on Red Hat OpenShift Dev Spaces, search "JHipster Online" on the example catalog and launch the code.
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/try-source.PNG" width="900" title="Run On Openshift">
+</p>
+
+[![Open](https://img.shields.io/static/v1?label=Open%20in&message=Developer%20Sandbox&logo=eclipseche&color=FDB940&labelColor=525C86)](https://workspaces.openshift.com/#https://github.com/redhat-developer-demos/jhipster-online)
+
+
+
+
+
+# Build Here. Go Anywhere.
+
+<img src="https://raw.githubusercontent.com/redhat-developer-demos/.github/main/profile/redhat-developer-logo.jpg" width="350">
+
+Join Red Hat Developer for product trails, hands-on learning, tools, technologies, and community.
+
+#### <a href="https://developers.redhat.com/" style="color: #e00">JOIN NOW</a>
+
+
