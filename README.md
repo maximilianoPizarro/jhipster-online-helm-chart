@@ -37,8 +37,6 @@ This stack include:
 </p>
 
 
-
-
 # Installation
 
 ## Charts Values Parameters
@@ -48,12 +46,46 @@ This stack include:
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/sing-repo.PNG" width="900" title="Run On Openshift">
 </p>
 
+Go to https://github.com/settings/developers to generate new OAuth App for this configuration:
+
 ```bash
 -->values.yaml
 ...
   APPLICATION_GITHUB_HOST: https://github.com
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
+...
+```
+
+##  Select JHipster Spring Boot or JHipster Quarkus mode generator
+
+- JHipster Quarkus (by default)
+
+```bash
+-->values.yaml
+...
+  APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
+  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-pipeline-quarkus.yaml"
+...
+```
+
+- JHipster Spring Boot 
+
+```bash
+-->values.yaml
+...
+  APPLICATION_JHIPSTER-CMD_CMD: jhipster
+  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-pipeline.yaml"
+...
+```
+
+## Developer Hub and DevSpaces configuration for your repo
+
+```bash
+-->values.yaml
+...
+  OPENSHIFT_DEVSPACE_URL-DEVFILE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-devspaces.yaml"
+  OPENSHIFT_BACKSTAGE_URL-BACKSTAGE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/catalog-info.yaml"
 ...
 ```
 
@@ -75,9 +107,18 @@ helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f 
 ```
 
 NOTE.
-jhipster-online name is mandatory, not use my-jhipster-online sample name. If you use other name change the configmap ngnix and rollout jhipster-online deployment.
+jhipster-online name is mandatory, not use my-jhipster-online sample name. 
+If you use other name change the configmap ngnix and rollout deployment jhipster-online.
 
-
+```bash
+...
+    location /jdl-studio/ {
+      proxy_pass http://jhipster-online:8081/;   <-- update by the name set instance
+      proxy_set_header X-Forwarded-For $remote_addr;
+      proxy_set_header Host $host;
+    }
+...    
+```
 
 ## Uninstall Chart
 
@@ -97,14 +138,12 @@ helm repo index .
 - [GitHub Page](https://maximilianopizarro.github.io/jhipster-online-helm-chart/)
 - [GitHub Source Repo](https://github.com/redhat-developer-demos/jhipster-online)
 
-Try on Red Hat OpenShift Dev Spaces, search "JHipster Online" on the example catalog and launch the code.
+Try on Red Hat OpenShift Dev Spaces, search by "JHipster Online" on the sample catalog and launch the code.
 <p align="left">
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/try-source.PNG" width="900" title="Run On Openshift">
 </p>
 
 [![Open](https://img.shields.io/static/v1?label=Open%20in&message=Developer%20Sandbox&logo=eclipseche&color=FDB940&labelColor=525C86)](https://workspaces.openshift.com/#https://github.com/redhat-developer-demos/jhipster-online)
-
-
 
 
 
