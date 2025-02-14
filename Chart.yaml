@@ -21,9 +21,9 @@ sources:
   - https://github.com/redhat-developer-demos/jhipster-online
 
 keywords:
-- jhipster
-- spring
-- openshift
+  - jhipster
+  - spring
+  - openshift
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
