@@ -16,6 +16,10 @@ description: "Stack with JHipster Online on Red Hat OpenShift.
 # pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
 
+sources:
+  - https://github.com/maximilianoPizarro/jhipster-online-helm-chart
+  - https://github.com/redhat-developer-demos/jhipster-online
+
 keywords:
 - jhipster
 - spring
