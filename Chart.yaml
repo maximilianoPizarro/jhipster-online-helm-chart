@@ -53,4 +53,4 @@ icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-
 #  repository: "oci://registry-1.docker.io/bitnamicharts"
 
 annotations:
-  charts.openshift.io/name:: JHipster Online
+  charts.openshift.io/name: JHipster Online
