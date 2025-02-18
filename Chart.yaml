@@ -6,6 +6,8 @@ description: "Stack with JHipster Online on Red Hat OpenShift.
              - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
              - JDL Studio for add JDL models files by PR on your repo."
 
+kubeVersion: ">=1.20.0"
+
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -49,3 +51,6 @@ icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-
 #- name: mariadb
 #  version: "20.2.2"
 #  repository: "oci://registry-1.docker.io/bitnamicharts"
+
+annotations:
+  charts.openshift.io/name:: JHipster Online

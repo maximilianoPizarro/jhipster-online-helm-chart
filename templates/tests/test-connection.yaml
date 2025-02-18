@@ -10,6 +10,9 @@ spec:
   containers:
     - name: wget
       image: busybox
+      env:
+      - name: KUBERNETES_MASTER
+        value: https://kubernetes.default:443       
       command: ['wget']
       args: ['{{ include "jhipster-online.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
