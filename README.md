@@ -13,12 +13,25 @@
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/capture.PNG" width="900" title="Run On Openshift">
 </p>
 
-Stack with JHipster Online on Red Hat OpenShift. 
+Stack with JHipster Online on Red Hat OpenShift.
 
-This stack include:
- - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. 
- - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
- - JDL Studio for add JDL files by PR on your repo.
+This stack includes:
+
+- **JHipster Online 2.40.0** with **generator-jhipster 9.0.0** (Spring Boot generation) and **generator-jhipster-quarkus 3.6.0** (Quarkus generation).
+- **JDL Studio** for adding JDL files by PR on your repo.
+
+### Container image tags (2.40.0+)
+
+Runtime images are published as **versioned tags** on `quay.io/maximilianopizarro/jhipster-online`:
+
+| Mode        | `values.yaml` `image.tag`   |
+|-------------|-----------------------------|
+| Quarkus     | `2.40.0-quarkus` (default)    |
+| Spring Boot | `2.40.0-spring-boot`          |
+
+Set `env.JAVA_APP_JAR` to `jhonline-2.40.0.war` to match the WAR inside these images.
+
+Chart **1.0.0** aligns with JHipster Online **appVersion 2.40.0**. Chart **0.1.0** remains available for older deployments.
 
 
 ## JDL Studio
@@ -89,6 +102,25 @@ Go to https://github.com/settings/developers to generate new OAuth App for this 
 ...
 ```
 
+## Red Hat Developer Sandbox (local Helm chart)
+
+From the root directory of this Helm chart (where `Chart.yaml` is located):
+
+```bash
+oc login --token=... --server=https://api.sandbox...openshift.com:6443
+oc project <your-dev-namespace>
+
+# Edit values-openshift-sandbox.example.yaml: set APPLICATION_JDL_AI_API_KEY (e.g. oc whoami -t),
+# route.host (optional), and GitHub OAuth secrets.
+
+helm upgrade --install jhipster-online . -n <your-dev-namespace> \
+  -f values.yaml -f values-openshift-sandbox.example.yaml
+```
+
+- **In-cluster OpenShift deploy**: the overlay sets `OPENSHIFT_DEPLOYMENT_ENABLED=true` and `openshift.grantEditRoleToServiceAccount=true`, which installs a **RoleBinding** to the built-in **ClusterRole `edit`** for the same ServiceAccount the Deployment uses (typically `default`). That removes manual `oc policy add-role-to-user edit ...` for **Deploy to OpenShift** from the UI.
+- **JDL AI**: the overlay sets `APPLICATION_JDL_AI_*` for inference in `sandbox-shared-models` (TLS trust via `APPLICATION_JDL_AI_INSECURE_TLS=true`). Replace `REPLACE_WITH_OC_WHOAMI_TOKEN` before installing. Do **not** combine `SPRING_PROFILES_ACTIVE=prod` with the public Quay image unless you have verified that image on the cluster (known fabric8 skew); prefer an image built from your namespace (ImageStream).
+- **Kuadrant** (optional): set `kuadrant.enabled: true` and fill `kuadrant.gateway` in `values.yaml` (or the overlay). This chart renders an `HTTPRoute`, a `RateLimitPolicy`, and an `AuthPolicy` only when `kuadrant.keycloakIssuerUri` is non-empty. On many Sandbox clusters Kuadrant is not installed; leave `kuadrant.enabled` false and use the OpenShift `Route` only.
+
 ## Add repository
 
 ```bash
@@ -97,13 +129,22 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 
 ## Install Chart with parameters
 
-```bash
-helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f values.yaml
-```
+**JHipster Online 2.40.0 (recommended):**
 
 ```bash
-Example:
-helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f values.yaml
+helm install jhipster-online jhipster-online/jhipster-online --version 1.0.0 -f values.yaml -n <your-namespace>
+```
+
+**Legacy chart (2.33.0 app):**
+
+```bash
+helm install jhipster-online jhipster-online/jhipster-online --version 0.1.0 -f values.yaml -n <your-namespace>
+```
+
+Example (current release):
+
+```bash
+helm install jhipster-online jhipster-online/jhipster-online --version 1.0.0 -f values.yaml -n maximilianopizarro5-dev
 ```
 
 NOTE.
@@ -123,7 +164,7 @@ If you use other name change the configmap ngnix and rollout deployment jhipster
 ## Uninstall Chart
 
 ```bash
-helm uninstall jhipster-online
+helm uninstall jhipster-online -n <your-namespace>
 ```
 
 ## Package Steps

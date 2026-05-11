@@ -9,9 +9,10 @@ replicaCount: 1
 image:
   repository: quay.io/maximilianopizarro/jhipster-online
   # This sets the pull policy for images.
+  # Use Always when the tag is reused (e.g. internal registry :quarkus after binary rebuilds).
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "quarkus"
+  # Overrides the image tag (use 2.40.0-quarkus or 2.40.0-spring-boot for runtime images).
+  tag: "2.40.0-quarkus"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -33,7 +34,9 @@ serviceAccount:
 
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
+podAnnotations:
+  # Prefer main app for `oc logs`/OpenShift log view (otherwise the UI may pick the sidecar first).
+  kubectl.kubernetes.io/default-container: jhipster-online
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -74,26 +77,61 @@ ingress:
   #      - chart-example.local
 
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment for example:
+# resources:
+#   limits:
+#     cpu: "1"
+#     memory: 1536Mi
+#   requests:
+#     cpu: 200m
+#     memory: 768Mi
 
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# Probes target the Spring Boot app on port 8080 (NOT /jdl-studio/, which is served by the jdl-studio sidecar on 8081).
+# Startup gives the JVM time to boot before liveness failures (clearer logs, fewer CrashLoop restarts).
+startupProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
 livenessProbe:
   httpGet:
-    path: /jdl-studio/
+    path: /management/health
     port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 5
+
 readinessProbe:
   httpGet:
-    path: /jdl-studio/
+    path: /management/health
     port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+# Sidecar (nginx + JDL Studio UI). Probes use port 8081 only — do not probe /jdl-studio/ on 8080.
+jdlStudio:
+  livenessProbe:
+    tcpSocket:
+      port: 8081
+    initialDelaySeconds: 20
+    periodSeconds: 30
+    timeoutSeconds: 3
+    failureThreshold: 5
+  readinessProbe:
+    tcpSocket:
+      port: 8081
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 6
 
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
@@ -122,18 +160,44 @@ tolerations: []
 
 affinity: {}
 
+# OpenShift-only: in-cluster deploy from the JHipster Online UI (Fabric8 / Argo CD).
+openshift:
+  # When true, creates a RoleBinding so the pod's ServiceAccount gets namespace-scoped "edit"
+  # (fixes 403 on secrets/deployments for system:serviceaccount:<ns>:default on Developer Sandbox).
+  grantEditRoleToServiceAccount: false
+
 route:
-  enabled: true  
+  enabled: true
+  # Optional explicit hostname for the OpenShift Route (recommended on Developer Sandbox).
+  # host: jhipster-online-myuser-dev.apps.sandbox-m4.p1.openshiftapps.com
+
+# Optional Kuadrant policies (Gateway API HTTPRoute + RateLimitPolicy; AuthPolicy if keycloakIssuerUri is set).
+# Requires Gateway API, a Gateway instance, and Kuadrant CRDs in the cluster.
+kuadrant:
+  enabled: false
+  gateway:
+    name: ""
+    namespace: ""
+    sectionName: https
+  # If empty, falls back to route.host; set explicitly when using HTTPRoute without route.host.
+  httpRouteHostname: ""
+  # Issuer URL for JWT validation (Keycloak / OIDC). Example: https://keycloak-.../realms/jhipster
+  keycloakIssuerUri: ""
 
 env:
-  JAVA_APP_JAR: jhonline-2.33.0.war
+  JAVA_APP_JAR: jhonline-2.40.0.war
+  # One line per log entry in OpenShift (timestamp, level, logger, message).
+  LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} - %msg%n"
   APPLICATION_GITHUB_HOST: https://github.com
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
   SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/jhipsteronline
   SPRING_DATASOURCE_USERNAME: jhipster
-  SPRING_DATASOURCE_PASSWORD: jhipster  
+  SPRING_DATASOURCE_PASSWORD: jhipster
+  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-pipeline-quarkus.yaml"
+  OPENSHIFT_DEVSPACE_URL-DEVFILE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-devspaces.yaml"
+  OPENSHIFT_BACKSTAGE_URL-BACKSTAGE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/catalog-info.yaml"
 
 #global:
 #  security:

@@ -1,0 +1,57 @@
+# Example overlay for Red Hat OpenShift Developer Sandbox.
+# Use after base values.yaml, e.g.:
+#   helm upgrade --install jhipster-online . -n <your-dev-namespace> \
+#     -f values.yaml -f values-openshift-sandbox.example.yaml
+#
+# Before install:
+# 1) oc login ... && oc project <your-dev-namespace>
+# 2) Prefer an image built in your namespace (BuildConfig / ImageStream). Public Quay tags
+#    combined with SPRING_PROFILES_ACTIVE=prod have been seen to fail startup (fabric8
+#    kubernetes-client version skew when the OpenShift client bean loads). Do not set prod
+#    here unless you run an image you have verified on the cluster.
+# 3) Replace route.host if you need a fixed hostname (optional).
+# 4) Set APPLICATION_JDL_AI_API_KEY (e.g. `oc whoami -t`) for sandbox-shared-models; JDL AI
+#    still needs a build that includes the matching application-*.yml / env wiring you use in prod.
+# 5) GitHub OAuth: set APPLICATION_GITHUB_CLIENT-ID and APPLICATION_JHIPSTER-CMD_CMD as needed.
+# 6) This overlay enables in-cluster OpenShift deploy + RBAC (openshift.* and OPENSHIFT_DEPLOYMENT_ENABLED).
+
+openshift:
+  grantEditRoleToServiceAccount: true
+
+route:
+  enabled: true
+  # Example (replace with your Sandbox apps hostname):
+  # host: jhipster-online-myuser-dev.apps.sandbox-m4.p1.openshiftapps.com
+
+# Keep the chart default image (e.g. quay.io/...:2.40.0-quarkus) unless you point to your own
+# ImageStream digest after `oc start-build`.
+
+env:
+  # Enable Fabric8 OpenShift client + /api/openshift/* (deploy generated apps from the UI).
+  OPENSHIFT_DEPLOYMENT_ENABLED: "true"
+  # After helm upgrade, the chart sets KUBERNETES_NAMESPACE from the pod (namespace dropdown).
+  # Optional duplicate hint for Spring: OPENSHIFT_DEPLOYMENT_DEFAULT_NAMESPACE: <your-dev-namespace>
+  # JDL AI (optional): only effective if your image/config exposes these properties like prod.
+  APPLICATION_JDL_AI_ENABLED: "true"
+  APPLICATION_JDL_AI_INSECURE_TLS: "true"
+  APPLICATION_JDL_AI_DEFAULT_MODEL_ID: granite-31-8b
+  # REQUIRED for inference: paste a Bearer token (e.g. output of `oc whoami -t`) or use a Secret.
+  APPLICATION_JDL_AI_API_KEY: REPLACE_WITH_OC_WHOAMI_TOKEN
+
+# Optional: only if you have Kuadrant + a Gateway in the Sandbox project.
+# kuadrant:
+#   enabled: true
+#   gateway:
+#     name: my-gateway
+#     namespace: my-gateway-ns
+#     sectionName: https
+#   httpRouteHostname: jhipster-online-myuser-dev.apps.sandbox-m4.p1.openshiftapps.com
+#   keycloakIssuerUri: ""
+
+resources:
+  limits:
+    cpu: "1"
+    memory: 1536Mi
+  requests:
+    cpu: 100m
+    memory: 768Mi

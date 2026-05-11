@@ -40,6 +40,15 @@
                 "JAVA_APP_JAR": {
                     "type": "string"
                 },
+                "OPENSHIFT_BACKSTAGE_URL-BACKSTAGE": {
+                    "type": "string"
+                },
+                "OPENSHIFT_DEVSPACE_URL-DEVFILE": {
+                    "type": "string"
+                },
+                "OPENSHIFT_TEKTON_URL-PIPELINE": {
+                    "type": "string"
+                },
                 "SPRING_DATASOURCE_PASSWORD": {
                     "type": "string"
                 },
@@ -131,6 +140,14 @@
         },
         "nameOverride": {
             "type": "string"
+        },
+        "openshift": {
+            "type": "object",
+            "properties": {
+                "grantEditRoleToServiceAccount": {
+                    "type": "boolean"
+                }
+            }
         },
         "nodeSelector": {
             "type": "object"

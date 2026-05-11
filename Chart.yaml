@@ -1,9 +1,9 @@
 apiVersion: v2
 name: jhipster-online
-description: "Stack with JHipster Online on Red Hat OpenShift. 
+description: "Stack with JHipster Online on Red Hat OpenShift.
             This Artifact include:
-             - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. 
-             - generator-jhipster-quarkus 3.4.0 for generate Quarkus 3.11.1 projects.
+             - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
+             - generator-jhipster-quarkus 3.6.0 for Quarkus projects.
              - JDL Studio for add JDL models files by PR on your repo."
 
 kubeVersion: ">=1.20.0"
@@ -26,17 +26,18 @@ keywords:
   - jhipster
   - spring
   - openshift
+  - quarkus
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.0
+version: 1.0.4
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.33.0"
+appVersion: "2.40.0"
 
 home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
 

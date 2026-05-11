@@ -1,0 +1,22 @@
+{{- if .Values.openshift.grantEditRoleToServiceAccount }}
+# Namespaced RoleBinding to the platform ClusterRole "edit" so the JHipster Online pod can create/list
+# secrets, deployments, routes, etc. when users deploy generated apps (Fabric8 / Argo CD from the UI).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "jhipster-online.fullname" . }}-edit-deploy
+  labels:
+    {{- include "jhipster-online.labels" . | nindent 4 }}
+  annotations:
+    openshift.io/description: >-
+      JHipster Online in-cluster OpenShift deploy: grant edit to the workload ServiceAccount
+      (see values.openshift.grantEditRoleToServiceAccount).
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "jhipster-online.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+{{- end }}
