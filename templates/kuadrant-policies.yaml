@@ -1,0 +1,95 @@
+{{- if .Values.kuadrant.enabled }}
+{{- $gw := .Values.kuadrant.gateway }}
+{{- if and $gw.name $gw.namespace }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "jhipster-online.fullname" . }}-http
+  labels:
+    {{- include "jhipster-online.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ $gw.name | quote }}
+      namespace: {{ $gw.namespace | quote }}
+      {{- if $gw.sectionName }}
+      sectionName: {{ $gw.sectionName | quote }}
+      {{- end }}
+  hostnames:
+    - {{ .Values.kuadrant.httpRouteHostname | default .Values.route.host | default "REPLACE-WITH-YOUR-APPS-HOSTNAME" | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "jhipster-online.fullname" . }}
+          port: {{ .Values.service.port }}
+---
+apiVersion: kuadrant.io/v1
+kind: RateLimitPolicy
+metadata:
+  name: {{ include "jhipster-online.fullname" . }}-jh-rl
+  labels:
+    {{- include "jhipster-online.labels" . | nindent 4 }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ include "jhipster-online.fullname" . }}-http
+  limits:
+    jh-global-per-route:
+      rates:
+        - limit: 600
+          window: 1m
+    jh-api-stricter:
+      when:
+        - predicate: request.path.startsWith("/api/")
+      rates:
+        - limit: 120
+          window: 1m
+{{- if .Values.kuadrant.keycloakIssuerUri }}
+---
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  name: {{ include "jhipster-online.fullname" . }}-jh-auth
+  labels:
+    {{- include "jhipster-online.labels" . | nindent 4 }}
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: {{ include "jhipster-online.fullname" . }}-http
+  rules:
+    authentication:
+      jh-anonymous:
+        anonymous: {}
+        when:
+          - predicate: >-
+              (request.path == "/api/authenticate" && request.method == "POST")
+              || (request.path == "/api/register" && request.method == "POST")
+              || (request.path == "/api/activate" && request.method == "GET")
+              || request.path == "/api/account/reset-password/init"
+              || request.path == "/api/account/reset-password/finish"
+              || request.path == "/management/health" || request.path == "/management/health/"
+              || request.path == "/management/info"
+              || request.path == "/management/prometheus"
+              || request.path.matches("^/v2/api-docs.*")
+              || request.path.matches("^/v3/api-docs.*")
+              || request.path.matches("^/swagger-ui.*")
+              || request.path.matches("^/swagger-resources.*")
+              || request.path.matches("^/oauth2/.*")
+              || request.path.matches("^/login/oauth2/.*")
+              || request.path == "/api/auth-info"
+      jh-oidc-bearer:
+        jwt:
+          issuerUrl: {{ .Values.kuadrant.keycloakIssuerUri | quote }}
+        credentials:
+          authorizationHeader:
+            prefix: Bearer
+{{- end }}
+{{- end }}
+{{- end }}
