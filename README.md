@@ -49,6 +49,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **generator-jhipster-quarkus 3.6.0** — generates Quarkus projects
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
+- **Editor AI** — in-app assist for **Helm YAML** and **JDL** (complete, explain, fix, generate-from-prompt) via `/api/editor-ai/*`; uses the **same** `APPLICATION_JDL_AI_*` settings and API key as JDL AI ([upstream](https://github.com/redhat-developer-demos/jhipster-online))
 - **MariaDB** — database for user data, JDL models, and statistics
 - **Cluster requirement** — Kubernetes **≥ 1.25** (OpenShift **4.12+**); see `kubeVersion` in [Chart.yaml](Chart.yaml).
 - **Developer Sandbox defaults** — a single [values.yaml](values.yaml): Route on, RBAC `edit` for the pod ServiceAccount, in-cluster deploy enabled, JDL AI URLs for `sandbox-shared-models`; set `env.APPLICATION_JDL_AI_API_KEY` at install (e.g. `oc whoami -t`). For other clusters, turn those off in the same file (see [RBAC for In-Cluster Deploy](#rbac-for-in-cluster-deploy)).
@@ -115,7 +116,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **defaults centralized in `values.yaml` for Developer Sandbox** (Route, RBAC `edit`, `OPENSHIFT_DEPLOYMENT_ENABLED`, Sandbox-sized `resources`, shared-model JDL AI URLs); upstream `application-prod.yml` alignment: `APPLICATION_HELM_TEMPLATE_*`, `OPENSHIFT_DEPLOYMENT_*` Helm/Fabric8; no separate overlay file |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **defaults in `values.yaml` for Developer Sandbox** (Route, RBAC `edit`, `OPENSHIFT_DEPLOYMENT_ENABLED`, Sandbox `resources`, shared-model JDL AI); `APPLICATION_HELM_TEMPLATE_*`; Helm deploy env names **`OPENSHIFT_USE_HELM_CLI`**, **`OPENSHIFT_HELM_*`** (match upstream `application-prod.yml`); Editor AI reuses JDL AI config; no overlay file |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -256,16 +257,18 @@ Upstream [application-prod.yml](https://github.com/redhat-developer-demos/jhipst
 | `APPLICATION_HELM_TEMPLATE_PACKAGE_CHART_REPOSITORY_ON_GENERATE` | `true` | After rendering the generated app’s `helm/` chart, run `helm package` and `helm repo index` so `chart-repository/` (`.tgz` + `index.yaml`) can be published (e.g. GitHub Pages). Requires the **helm** CLI on the JHipster Online image if you leave this enabled. |
 | `APPLICATION_HELM_TEMPLATE_CHART_REPOSITORY_INDEX_BASE_URL` | *(empty)* | Optional `helm repo index --url` base; when empty the app uses its GitHub Pages convention. |
 | `APPLICATION_HELM_TEMPLATE_HELM_BINARY` | `helm` | Binary used for packaging (separate from OpenShift deploy below). |
-| `OPENSHIFT_DEPLOYMENT_USE_HELM_CLI` | `true` | When `OPENSHIFT_DEPLOYMENT_ENABLED=true`, prefer `helm upgrade --install` for in-cluster installs. |
-| `OPENSHIFT_DEPLOYMENT_HELM_BINARY` | `helm` | Helm binary for deploy operations. |
-| `OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS` | `600` | Timeout passed to Helm. |
-| `OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8` | `true` | If Helm CLI deploy fails, fall back to Fabric8 client apply. |
+| `OPENSHIFT_USE_HELM_CLI` | `true` | When `OPENSHIFT_DEPLOYMENT_ENABLED=true`, prefer `helm upgrade --install` for in-cluster installs (placeholder in upstream `application-prod.yml`). |
+| `OPENSHIFT_HELM_BINARY` | `helm` | Helm binary for deploy operations. |
+| `OPENSHIFT_HELM_TIMEOUT_SECONDS` | `600` | Timeout passed to Helm. |
+| `OPENSHIFT_HELM_FALLBACK_TO_FABRIC8` | `true` | If Helm CLI deploy fails, fall back to Fabric8 client apply. |
 
-Set `OPENSHIFT_DEPLOYMENT_USE_HELM_CLI` to `false` if your runtime image has no Helm CLI and you rely on Fabric8 only (matches upstream `application-dev.yml` default).
+Set `OPENSHIFT_USE_HELM_CLI` to `false` if your runtime image has no Helm CLI and you rely on Fabric8 only (matches upstream `application-dev.yml` literal default).
 
 ### JDL AI Assistant (OpenShift AI Models)
 
 The **Design Entities** page shows an **AI-assisted JDL draft** panel when `APPLICATION_JDL_AI_ENABLED=true` and at least one OpenAI-compatible completions URL is configured. The backend calls `POST .../v1/chat/completions` (vLLM, KServe, Ollama, OpenAI, etc.).
+
+**Editor AI** (Helm chart YAML editor and JDL refine): authenticated endpoints under `/api/editor-ai/*` reuse **`application.jdl-ai`** — the same models, timeouts, RAG flags, and **`APPLICATION_JDL_AI_API_KEY`** as above. No extra environment variables are required once JDL AI is configured.
 
 **RAG (retrieval)**:
 
@@ -484,6 +487,10 @@ Treat `APPLICATION_JDL_AI_API_KEY` like any cloud API key: short-lived tokens wh
 | `env.JAVA_OPTS_APPEND` | string | *(UTF-8 + MaxRAMPercentage)* | Extra JVM flags (UBI OpenJDK `run-java.sh`) |
 | `env.LOGGING_PATTERN_CONSOLE` | string | *(pattern)* | Log line format (`logging.pattern.console`) |
 | `env.OPENSHIFT_DEPLOYMENT_ENABLED` | string | `"true"` | Enable in-cluster deploy from UI (`openshift.deployment.enabled`) |
+| `env.OPENSHIFT_USE_HELM_CLI` | string | `"true"` | Prefer Helm CLI for deploy (`openshift.deployment.use-helm-cli`; upstream prod placeholder) |
+| `env.OPENSHIFT_HELM_BINARY` | string | `helm` | Helm binary for deploy |
+| `env.OPENSHIFT_HELM_TIMEOUT_SECONDS` | string | `"600"` | Helm operation timeout (seconds) |
+| `env.OPENSHIFT_HELM_FALLBACK_TO_FABRIC8` | string | `"true"` | Fall back to Fabric8 if Helm fails |
 | `env.APPLICATION_JDL_AI_ENABLED` | string | `"true"` | Enable JDL AI assistant |
 | `env.APPLICATION_JDL_AI_DEFAULT_MODEL_ID` | string | `granite-31-8b` | Default AI model |
 | `env.APPLICATION_JDL_AI_API_KEY` | string | `""` | Bearer token for model auth |

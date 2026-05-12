@@ -215,11 +215,11 @@ env:
   APPLICATION_HELM_TEMPLATE_PACKAGE_CHART_REPOSITORY_ON_GENERATE: "true"
   APPLICATION_HELM_TEMPLATE_CHART_REPOSITORY_INDEX_BASE_URL: ""
   APPLICATION_HELM_TEMPLATE_HELM_BINARY: "helm"
-  # In-cluster OpenShift deploy (openshift.deployment.*): Helm CLI vs Fabric8 client.
-  OPENSHIFT_DEPLOYMENT_USE_HELM_CLI: "true"
-  OPENSHIFT_DEPLOYMENT_HELM_BINARY: "helm"
-  OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS: "600"
-  OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8: "true"
+  # In-cluster deploy Helm CLI (names match upstream application-prod.yml placeholders).
+  OPENSHIFT_USE_HELM_CLI: "true"
+  OPENSHIFT_HELM_BINARY: "helm"
+  OPENSHIFT_HELM_TIMEOUT_SECONDS: "600"
+  OPENSHIFT_HELM_FALLBACK_TO_FABRIC8: "true"
   # JDL AI assistant — models served via KServe/vLLM in sandbox-shared-models namespace.
   # See https://github.com/redhat-developer-demos/jhipster-online README ("Optional JDL AI assistant").
   APPLICATION_JDL_AI_ENABLED: "true"
@@ -233,7 +233,7 @@ env:
   APPLICATION_JDL_AI_EMBEDDINGS_MODEL: "text-embedding-3-small"
   APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS: "15000"
   APPLICATION_JDL_AI_READ_TIMEOUT_MS: "120000"
-  APPLICATION_JDL_AI_HELP_TEXT: "Drafts are suggestions — always review in JDL Studio before applying."
+  APPLICATION_JDL_AI_HELP_TEXT: "GPU models from sandbox-shared-models (IBM Granite, NVIDIA Nemotron, Qwen3). Use a cluster token with access to that namespace."
   # Model 0 — IBM Granite 3.1 8B (FP8) (labels match upstream application-prod.yml)
   APPLICATION_JDL_AI_MODELS_0_ID: granite-31-8b
   APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B (FP8)"

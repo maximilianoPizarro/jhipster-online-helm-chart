@@ -307,20 +307,20 @@
                     "type": "string",
                     "description": "Helm CLI binary for chart packaging (application.helm-template.helm-binary)"
                 },
-                "OPENSHIFT_DEPLOYMENT_USE_HELM_CLI": {
+                "OPENSHIFT_USE_HELM_CLI": {
                     "type": "string",
-                    "description": "Use helm upgrade --install for in-cluster deploy when openshift.deployment.enabled",
+                    "description": "Prefer helm upgrade --install for in-cluster deploy (upstream application-prod.yml placeholder)",
                     "enum": ["true", "false"]
                 },
-                "OPENSHIFT_DEPLOYMENT_HELM_BINARY": {
+                "OPENSHIFT_HELM_BINARY": {
                     "type": "string",
-                    "description": "Helm binary for OpenShift deploy (openshift.deployment.helm-binary)"
+                    "description": "Helm binary for OpenShift deploy (OPENSHIFT_HELM_BINARY)"
                 },
-                "OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS": {
+                "OPENSHIFT_HELM_TIMEOUT_SECONDS": {
                     "type": "string",
-                    "description": "Timeout for helm install/upgrade (seconds)"
+                    "description": "Helm install/upgrade timeout in seconds"
                 },
-                "OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8": {
+                "OPENSHIFT_HELM_FALLBACK_TO_FABRIC8": {
                     "type": "string",
                     "description": "If Helm CLI deploy fails, fall back to Fabric8 apply",
                     "enum": ["true", "false"]

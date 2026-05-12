@@ -13,6 +13,7 @@ description: >-
   Aligns with upstream application-prod: optional chart-repo packaging after generate,
   and OpenShift deploy via Helm CLI with Fabric8 fallback.
   Default values.yaml targets Red Hat Developer Sandbox (Route, edit RBAC, in-cluster deploy, shared-model JDL AI URLs).
+  Helm deploy tuning uses OPENSHIFT_USE_HELM_CLI / OPENSHIFT_HELM_* env names per upstream application-prod.yml.
 
 # OpenShift 4.12+ ships Kubernetes 1.25; Developer Sandbox and current OCP are well above this floor.
 kubeVersion: ">=1.25.0-0"
