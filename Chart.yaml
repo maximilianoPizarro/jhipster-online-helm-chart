@@ -1,11 +1,14 @@
 apiVersion: v2
 name: jhipster-online
-description: "Stack with JHipster Online on Red Hat OpenShift.
-            This Artifact include:
-             - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.1).
-             - generator-jhipster-quarkus 3.6.0 for Quarkus projects.
-             - JDL Studio for add JDL models files by PR on your repo.
-             - Chart 1.1.0: Quay 2.40.1-* UBI8 OpenJDK 21 runtime, Maven 3.9.15, Node 22; WAR /deployments/jhonline.war; imagePullPolicy Always (main); JDL AI RAG/timeouts; JAVA_OPTS_APPEND UTF-8 + MaxRAMPercentage; default pod resources."
+description: >-
+  Helm chart for JHipster Online on Red Hat OpenShift (application 2.40.1). Includes
+  generator-jhipster 9.0.0, generator-jhipster-quarkus 3.6.0, a JDL Studio sidecar,
+  MariaDB, an OpenShift Route, and optional in-cluster deploy RBAC. Runtime images on
+  Quay (tags 2.40.1-quarkus / 2.40.1-spring-boot) match upstream Dockerfiles: UBI8
+  OpenJDK 21, Node 22, Maven 3.9.15, WAR at /deployments/jhonline.war; the main
+  container uses imagePullPolicy Always. JDL AI supports lexical and optional semantic
+  RAG plus configurable HTTP timeouts. Defaults add JAVA_OPTS_APPEND (UTF-8 and
+  MaxRAMPercentage for cgroup-friendly heap) and pod CPU/memory requests and limits.
 
 # OpenShift 4.12+ ships Kubernetes 1.25; Developer Sandbox and current OCP are well above this floor.
 kubeVersion: ">=1.25.0-0"
