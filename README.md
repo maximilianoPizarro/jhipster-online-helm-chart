@@ -114,8 +114,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.1** | 2.40.1 | Sync with upstream `application-prod.yml` (May 2026): `APPLICATION_HELM_TEMPLATE_*` (package chart repo on generate, optional index base URL, helm binary for packaging); `OPENSHIFT_DEPLOYMENT_*` Helm CLI install with timeout and Fabric8 fallback; JDL AI model labels aligned with upstream |
-| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21** runtime per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** on main container; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources** requests/limits; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/`; OpenShift generator uses **embedded** devfile/Tekton/Helm templates (no `OPENSHIFT_*` raw GitHub URL env vars; aligns with upstream removal of externalized `kubernetes/*.yaml`) |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources**; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/`; OpenShift generator **embedded** templates (no raw `OPENSHIFT_*` GitHub URLs); upstream `application-prod.yml` alignment: `APPLICATION_HELM_TEMPLATE_*` (chart-repo packaging on generate), `OPENSHIFT_DEPLOYMENT_*` (Helm CLI deploy, timeout, Fabric8 fallback), JDL model labels per upstream |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -132,11 +131,11 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 
 # Install (latest)
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.1 -n <your-namespace>
+  --version 1.1.0 -n <your-namespace>
 
 # With AI models token
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.1 -n <your-namespace> \
+  --version 1.1.0 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -280,7 +279,7 @@ All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-mode
 
 ```bash
 helm upgrade --install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.1 -n <your-namespace> \
+  --version 1.1.0 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
