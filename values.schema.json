@@ -2,95 +2,88 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
-        "affinity": {
-            "type": "object"
-        },
-        "autoscaling": {
-            "type": "object",
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "maxReplicas": {
-                    "type": "integer"
-                },
-                "minReplicas": {
-                    "type": "integer"
-                },
-                "targetCPUUtilizationPercentage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "env": {
-            "type": "object",
-            "properties": {
-                "APPLICATION_GITHUB_CLIENT-ID": {
-                    "type": "string"
-                },
-                "APPLICATION_GITHUB_CLIENT-SECRET": {
-                    "type": "string"
-                },
-                "APPLICATION_GITHUB_HOST": {
-                    "type": "string"
-                },
-                "APPLICATION_JHIPSTER-CMD_CMD": {
-                    "type": "string"
-                },
-                "JAVA_APP_JAR": {
-                    "type": "string"
-                },
-                "OPENSHIFT_BACKSTAGE_URL-BACKSTAGE": {
-                    "type": "string"
-                },
-                "OPENSHIFT_DEVSPACE_URL-DEVFILE": {
-                    "type": "string"
-                },
-                "OPENSHIFT_TEKTON_URL-PIPELINE": {
-                    "type": "string"
-                },
-                "SPRING_DATASOURCE_PASSWORD": {
-                    "type": "string"
-                },
-                "SPRING_DATASOURCE_URL": {
-                    "type": "string"
-                },
-                "SPRING_DATASOURCE_USERNAME": {
-                    "type": "string"
-                }
-            }
-        },
-        "fullnameOverride": {
-            "type": "string"
+        "replicaCount": {
+            "type": "integer",
+            "minimum": 1
         },
         "image": {
             "type": "object",
             "properties": {
-                "pullPolicy": {
-                    "type": "string"
-                },
                 "repository": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Container image registry and repository"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "enum": ["Always", "IfNotPresent", "Never"]
                 },
                 "tag": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Image tag (2.40.0-quarkus or 2.40.0-spring-boot)"
                 }
             }
         },
         "imagePullSecrets": {
             "type": "array"
         },
+        "nameOverride": {
+            "type": "string"
+        },
+        "fullnameOverride": {
+            "type": "string"
+        },
+        "serviceAccount": {
+            "type": "object",
+            "properties": {
+                "create": {
+                    "type": "boolean"
+                },
+                "automount": {
+                    "type": "boolean"
+                },
+                "annotations": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "podAnnotations": {
+            "type": "object"
+        },
+        "podLabels": {
+            "type": "object"
+        },
+        "podSecurityContext": {
+            "type": "object"
+        },
+        "securityContext": {
+            "type": "object"
+        },
+        "service": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["ClusterIP", "NodePort", "LoadBalancer"]
+                },
+                "port": {
+                    "type": "integer"
+                }
+            }
+        },
         "ingress": {
             "type": "object",
             "properties": {
-                "annotations": {
-                    "type": "object"
+                "enabled": {
+                    "type": "boolean"
                 },
                 "className": {
                     "type": "string"
                 },
-                "enabled": {
-                    "type": "boolean"
+                "annotations": {
+                    "type": "object"
                 },
                 "hosts": {
                     "type": "array",
@@ -122,6 +115,13 @@
                 }
             }
         },
+        "resources": {
+            "type": "object"
+        },
+        "startupProbe": {
+            "type": "object",
+            "description": "Startup probe for the JHipster Online container (port 8080)"
+        },
         "livenessProbe": {
             "type": "object",
             "properties": {
@@ -137,29 +137,6 @@
                     }
                 }
             }
-        },
-        "nameOverride": {
-            "type": "string"
-        },
-        "openshift": {
-            "type": "object",
-            "properties": {
-                "grantEditRoleToServiceAccount": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "nodeSelector": {
-            "type": "object"
-        },
-        "podAnnotations": {
-            "type": "object"
-        },
-        "podLabels": {
-            "type": "object"
-        },
-        "podSecurityContext": {
-            "type": "object"
         },
         "readinessProbe": {
             "type": "object",
@@ -177,59 +154,221 @@
                 }
             }
         },
-        "replicaCount": {
-            "type": "integer"
+        "jdlStudio": {
+            "type": "object",
+            "description": "JDL Studio sidecar (nginx) probe configuration",
+            "properties": {
+                "livenessProbe": {
+                    "type": "object"
+                },
+                "readinessProbe": {
+                    "type": "object"
+                }
+            }
         },
-        "resources": {
-            "type": "object"
-        },
-        "route": {
+        "autoscaling": {
             "type": "object",
             "properties": {
                 "enabled": {
                     "type": "boolean"
-                }
-            }
-        },
-        "securityContext": {
-            "type": "object"
-        },
-        "service": {
-            "type": "object",
-            "properties": {
-                "port": {
+                },
+                "minReplicas": {
                     "type": "integer"
                 },
-                "type": {
-                    "type": "string"
+                "maxReplicas": {
+                    "type": "integer"
+                },
+                "targetCPUUtilizationPercentage": {
+                    "type": "integer"
                 }
             }
         },
-        "serviceAccount": {
-            "type": "object",
-            "properties": {
-                "annotations": {
-                    "type": "object"
-                },
-                "automount": {
-                    "type": "boolean"
-                },
-                "create": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "tolerations": {
+        "volumes": {
             "type": "array"
         },
         "volumeMounts": {
             "type": "array"
         },
-        "volumes": {
+        "nodeSelector": {
+            "type": "object"
+        },
+        "tolerations": {
             "type": "array"
+        },
+        "affinity": {
+            "type": "object"
+        },
+        "openshift": {
+            "type": "object",
+            "description": "OpenShift-specific: in-cluster deploy RBAC",
+            "properties": {
+                "grantEditRoleToServiceAccount": {
+                    "type": "boolean",
+                    "description": "Create a RoleBinding granting 'edit' to the pod ServiceAccount"
+                }
+            }
+        },
+        "route": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Create an OpenShift Route"
+                },
+                "host": {
+                    "type": "string",
+                    "description": "Explicit hostname for the Route"
+                }
+            }
+        },
+        "kuadrant": {
+            "type": "object",
+            "description": "Kuadrant Gateway API policies (HTTPRoute, RateLimitPolicy, AuthPolicy)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "gateway": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string"
+                        },
+                        "namespace": {
+                            "type": "string"
+                        },
+                        "sectionName": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "httpRouteHostname": {
+                    "type": "string"
+                },
+                "keycloakIssuerUri": {
+                    "type": "string",
+                    "description": "OIDC issuer URL for JWT validation; enables AuthPolicy"
+                }
+            }
+        },
+        "env": {
+            "type": "object",
+            "description": "Environment variables injected into the jhipster-online container",
+            "properties": {
+                "JAVA_APP_JAR": {
+                    "type": "string",
+                    "description": "WAR file name inside the image"
+                },
+                "LOGGING_PATTERN_CONSOLE": {
+                    "type": "string"
+                },
+                "APPLICATION_GITHUB_HOST": {
+                    "type": "string"
+                },
+                "APPLICATION_GITHUB_CLIENT-ID": {
+                    "type": "string"
+                },
+                "APPLICATION_GITHUB_CLIENT-SECRET": {
+                    "type": "string"
+                },
+                "APPLICATION_JHIPSTER-CMD_CMD": {
+                    "type": "string",
+                    "description": "Generator CLI command: 'jhipster' or 'jhipster-quarkus'"
+                },
+                "SPRING_DATASOURCE_URL": {
+                    "type": "string"
+                },
+                "SPRING_DATASOURCE_USERNAME": {
+                    "type": "string"
+                },
+                "SPRING_DATASOURCE_PASSWORD": {
+                    "type": "string"
+                },
+                "OPENSHIFT_TEKTON_URL-PIPELINE": {
+                    "type": "string"
+                },
+                "OPENSHIFT_DEVSPACE_URL-DEVFILE": {
+                    "type": "string"
+                },
+                "OPENSHIFT_BACKSTAGE_URL-BACKSTAGE": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_ENABLED": {
+                    "type": "string",
+                    "description": "Enable JDL AI assistant (true/false)",
+                    "enum": ["true", "false"]
+                },
+                "APPLICATION_JDL_AI_INSECURE_TLS": {
+                    "type": "string",
+                    "description": "Trust self-signed certs for in-cluster model endpoints",
+                    "enum": ["true", "false"]
+                },
+                "APPLICATION_JDL_AI_DEFAULT_MODEL_ID": {
+                    "type": "string",
+                    "description": "Default model ID from the models list"
+                },
+                "APPLICATION_JDL_AI_RAG_ENABLED": {
+                    "type": "string",
+                    "description": "Enable lexical RAG over JDL reference chunks",
+                    "enum": ["true", "false"]
+                },
+                "APPLICATION_JDL_AI_RAG_TOP_K": {
+                    "type": "string",
+                    "description": "Number of RAG chunks to inject"
+                },
+                "APPLICATION_JDL_AI_RAG_MAX_CHARS": {
+                    "type": "string",
+                    "description": "Max characters of RAG context"
+                },
+                "APPLICATION_JDL_AI_HELP_TEXT": {
+                    "type": "string",
+                    "description": "Hint text shown in the AI panel UI"
+                },
+                "APPLICATION_JDL_AI_MODELS_0_ID": {
+                    "type": "string",
+                    "description": "Model 0 stable ID"
+                },
+                "APPLICATION_JDL_AI_MODELS_0_LABEL": {
+                    "type": "string",
+                    "description": "Model 0 display label"
+                },
+                "APPLICATION_JDL_AI_MODELS_0_MODEL": {
+                    "type": "string",
+                    "description": "Model 0 vLLM model name"
+                },
+                "APPLICATION_JDL_AI_MODELS_0_API_URL": {
+                    "type": "string",
+                    "description": "Model 0 OpenAI-compatible completions URL"
+                },
+                "APPLICATION_JDL_AI_MODELS_1_ID": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_1_LABEL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_1_MODEL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_1_API_URL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_2_ID": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_2_LABEL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_2_MODEL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_MODELS_2_API_URL": {
+                    "type": "string"
+                },
+                "APPLICATION_JDL_AI_API_KEY": {
+                    "type": "string",
+                    "description": "Bearer token for model authentication (use --set-string at install)"
+                }
+            }
         }
     }
 }
