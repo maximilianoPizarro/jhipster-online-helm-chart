@@ -23,14 +23,15 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.1
-    created: "2026-05-12T16:17:25.3969425-03:00"
+    created: "2026-05-12T17:19:04.7544687-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.1).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
-      JDL models files by PR on your repo. - Chart 1.1.0: Quay 2.40.1-* images, WAR
-      /deployments/jhonline.war, imagePullPolicy Always (main), JDL AI RAG/timeouts,
-      banner/ANSI log defaults.'
-    digest: 6a3892f52ea89054343820760f7b4564bb482ec56ffe03ce4db89a1d49365a67
+      JDL models files by PR on your repo. - Chart 1.1.0: Quay 2.40.1-* UBI8 OpenJDK
+      21 runtime, Maven 3.9.15, Node 22; WAR /deployments/jhonline.war; imagePullPolicy
+      Always (main); JDL AI RAG/timeouts; JAVA_OPTS_APPEND UTF-8 + MaxRAMPercentage;
+      default pod resources.'
+    digest: 844cba983a195d410e3abb4379d2fce600614ac3ffa8e22e738e928a8ac14683
     home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
     icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
     keywords:
@@ -75,7 +76,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.0
-    created: "2026-05-12T16:17:25.392029-03:00"
+    created: "2026-05-12T17:19:04.7480199-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
@@ -107,7 +108,7 @@ entries:
       charts.openshift.io/name: JHipster Online
     apiVersion: v2
     appVersion: 2.33.0
-    created: "2026-05-12T16:17:25.384582-03:00"
+    created: "2026-05-12T17:19:04.7432821-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. - generator-jhipster-quarkus
       3.4.0 for generate Quarkus 3.11.1 projects. - JDL Studio for add JDL models
@@ -132,4 +133,4 @@ entries:
     urls:
     - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-12T16:17:25.3818621-03:00"
+generated: "2026-05-12T17:19:04.7416668-03:00"

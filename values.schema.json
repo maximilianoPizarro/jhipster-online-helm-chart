@@ -263,15 +263,9 @@
                 "LOGGING_PATTERN_CONSOLE": {
                     "type": "string"
                 },
-                "SPRING_MAIN_BANNER_MODE": {
+                "JAVA_OPTS_APPEND": {
                     "type": "string",
-                    "description": "Spring Boot spring.main.banner-mode: off | console | log",
-                    "enum": ["off", "console", "log"]
-                },
-                "SPRING_OUTPUT_ANSI_ENABLED": {
-                    "type": "string",
-                    "description": "Spring Boot spring.output.ansi.enabled: never | always | detected",
-                    "enum": ["never", "always", "detected"]
+                    "description": "Appended to JVM options (UBI OpenJDK run script); UTF-8 and heap tuning for container"
                 },
                 "APPLICATION_GITHUB_HOST": {
                     "type": "string"

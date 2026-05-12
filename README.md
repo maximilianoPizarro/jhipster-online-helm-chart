@@ -25,7 +25,7 @@
   - [From Helm Repository](#from-helm-repository)
   - [Red Hat Developer Sandbox (local chart)](#red-hat-developer-sandbox-local-chart)
 - [Configuration](#configuration)
-  - [Console logs (banner and ANSI)](#console-logs-banner-and-ansi)
+  - [Startup console, JVM, and resources](#startup-console-jvm-and-resources)
   - [Generator Mode (Quarkus / Spring Boot)](#generator-mode-quarkus--spring-boot)
   - [GitHub OAuth](#github-oauth)
   - [Developer Hub and Dev Spaces](#developer-hub-and-dev-spaces)
@@ -51,6 +51,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **MariaDB** — database for user data, JDL models, and statistics
 - **Cluster requirement** — Kubernetes **≥ 1.25** (OpenShift **4.12+**); see `kubeVersion` in [Chart.yaml](Chart.yaml).
+- **Runtime image (upstream)** — [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online) `Dockerfile.quarkus` / `Dockerfile.spring-boot`: **UBI8 OpenJDK 21**, **Node 22.19**, **Maven 3.9.15**, WAR at `/deployments/jhonline.war`.
 
 Source application: [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)
 
@@ -98,8 +99,8 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 
 | Tag | Dockerfile | Base | Generators |
 |-----|-----------|------|------------|
-| `2.40.1-quarkus` (default) | `Dockerfile.quarkus` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
-| `2.40.1-spring-boot` | `Dockerfile.spring-boot` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 |
+| `2.40.1-quarkus` (default) | [`Dockerfile.quarkus`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.quarkus) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22** | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
+| `2.40.1-spring-boot` | [`Dockerfile.spring-boot`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.spring-boot) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22** | generator-jhipster 9.0.0 |
 
 **Registry**: `quay.io/maximilianopizarro/jhipster-online`
 
@@ -113,7 +114,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | Imágenes `2.40.1-*`; `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** en el contenedor principal; JDL AI (RAG léxico + opción semántica, timeouts); logs más legibles (`SPRING_MAIN_BANNER_MODE`, `SPRING_OUTPUT_ANSI_ENABLED`); diagramas en `image/` |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21** runtime per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** on main container; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources** requests/limits; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/` |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -142,7 +143,7 @@ helm install jhipster-online jhipster-online/jhipster-online \
 
 ### Red Hat Developer Sandbox (local chart)
 
-Recomendado: base + overlay de Sandbox (RBAC `edit` para el ServiceAccount del pod y `OPENSHIFT_DEPLOYMENT_ENABLED` para desplegar desde la UI), y token para los modelos compartidos:
+Recommended: base `values.yaml` plus the Sandbox overlay (RBAC `edit` for the pod ServiceAccount and `OPENSHIFT_DEPLOYMENT_ENABLED` for in-cluster deploy from the UI), and a bearer token for shared models:
 
 ```bash
 # Login
@@ -154,10 +155,10 @@ helm upgrade --install jhipster-online . -n <your-dev-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
-Si **no** necesitas desplegar apps al clúster desde la UI, omite el segundo `-f` (o pon `openshift.grantEditRoleToServiceAccount: false` en tu propio overlay).
+If you **do not** need to deploy generated apps into the cluster from the UI, omit the second `-f` (or set `openshift.grantEditRoleToServiceAccount: false` in your own overlay).
 
-- **JDL AI**: por defecto tres modelos en `sandbox-shared-models` y `APPLICATION_JDL_AI_INSECURE_TLS=true`.
-- **Nueva imagen sin cambiar tag**: con `image.pullPolicy: Always` (por defecto) basta un `oc rollout restart deployment/jhipster-online -n <ns>`.
+- **JDL AI**: by default three models in `sandbox-shared-models` and `APPLICATION_JDL_AI_INSECURE_TLS=true`.
+- **Same image tag, new digest**: with `image.pullPolicy: Always` (default), run `oc rollout restart deployment/jhipster-online -n <ns>` after the registry is updated.
 
 ### Uninstall
 
@@ -169,21 +170,23 @@ helm uninstall jhipster-online -n <your-namespace>
 
 ## Configuration
 
-### Console logs (banner and ANSI)
+### Startup console, JVM, and resources
 
-JHipster imprime un banner ASCII y colores ANSI al arrancar; en **OpenShift** (`oc logs`, Kibana, Loki) suele molestar. El chart expone variables Spring Boot vía `env`:
+The **JHipster ASCII banner** stays enabled by default (Spring Boot default). The chart does **not** set `SPRING_MAIN_BANNER_MODE=off`. To make startup output easier to read in OpenShift (encoding + heap inside the cgroup) the chart sets:
 
-| Variable | Valor por defecto | Efecto |
-|----------|-------------------|--------|
-| `SPRING_MAIN_BANNER_MODE` | `off` | Quita el banner multilínea. Usa `console` o `log` si quieres conservarlo. |
-| `SPRING_OUTPUT_ANSI_ENABLED` | `never` | Sin secuencias ANSI; líneas planas y legibles. `detected` deja que Spring decida si hay TTY. |
+| Mechanism | Default in chart | Purpose |
+|-----------|------------------|---------|
+| `JAVA_OPTS_APPEND` | UTF-8 system properties + `-XX:MaxRAMPercentage=72.0` | Cleaner multi-byte output and JVM heap sized to the container memory limit (UBI OpenJDK [run script](https://catalog.redhat.com/en/software/containers/ubi8/openjdk-21)). |
+| `resources` | requests `768Mi` / `100m`, limits `1536Mi` / `1500m` | Gives the JVM enough RAM to start without OOMKill on small namespaces; set `resources: {}` to unset. |
+| `LOGGING_PATTERN_CONSOLE` | single-line pattern | Structured plain-text lines after the banner. |
 
-Opcional: ajusta el formato de línea con `LOGGING_PATTERN_CONSOLE` (ya definido en `values.yaml`).
+Optional Spring Boot tuning via `env` (only if you need it):
 
 ```yaml
 env:
-  SPRING_MAIN_BANNER_MODE: "off"
-  SPRING_OUTPUT_ANSI_ENABLED: "never"
+  # Example: disable banner in log aggregators only (not the default in this chart)
+  # SPRING_MAIN_BANNER_MODE: "off"
+  # SPRING_OUTPUT_ANSI_ENABLED: "never"   # strip ANSI in captured logs
 ```
 
 ### Generator Mode (Quarkus / Spring Boot)
@@ -447,9 +450,9 @@ Treat `APPLICATION_JDL_AI_API_KEY` like any cloud API key: short-lived tokens wh
 | `autoscaling.enabled` | bool | `false` | Enable HPA |
 | `openshift.grantEditRoleToServiceAccount` | bool | `false` | Bind `edit` role to pod SA |
 | `kuadrant.enabled` | bool | `false` | Enable Kuadrant policies |
+| `resources` | object | requests/limits | CPU/memory for the **jhipster-online** container; set `{}` to unset |
 | `env.JAVA_APP_JAR` | string | `/deployments/jhonline.war` | WAR path inside the container (must match the image layout) |
-| `env.SPRING_MAIN_BANNER_MODE` | string | `"off"` | Spring Boot banner: `off` / `console` / `log` |
-| `env.SPRING_OUTPUT_ANSI_ENABLED` | string | `"never"` | ANSI in console: `never` / `always` / `detected` |
+| `env.JAVA_OPTS_APPEND` | string | *(UTF-8 + MaxRAMPercentage)* | Extra JVM flags (UBI OpenJDK `run-java.sh`) |
 | `env.LOGGING_PATTERN_CONSOLE` | string | *(pattern)* | Log line format (`logging.pattern.console`) |
 | `env.APPLICATION_JDL_AI_ENABLED` | string | `"true"` | Enable JDL AI assistant |
 | `env.APPLICATION_JDL_AI_DEFAULT_MODEL_ID` | string | `granite-31-8b` | Default AI model |
@@ -483,7 +486,7 @@ Treat `APPLICATION_JDL_AI_API_KEY` like any cloud API key: short-lived tokens wh
 
 ## Packaging
 
-Publicar en **GitHub Pages** (repositorio del chart): tras empaquetar, **sube también** `charts/jhipster-online-*.tgz` e `index.yaml` en el mismo commit para que `helm repo update` vea la nueva versión o digest.
+To publish on **GitHub Pages** for this chart repo: after packaging, **commit** `charts/jhipster-online-*.tgz` and `index.yaml` together so `helm repo update` picks up the new digest or version.
 
 ```bash
 # Optional: regenerate README / Artifact Hub diagrams (no API key)
@@ -492,7 +495,7 @@ python scripts/render_diagrams.py
 # Package chart
 helm package -u . -d charts
 
-# Regenerate index (merge keeps entradas anteriores del repo)
+# Regenerate index (merge keeps older chart entries)
 helm repo index . --url https://maximilianopizarro.github.io/jhipster-online-helm-chart/ --merge index.yaml
 ```
 
@@ -504,7 +507,7 @@ helm repo index . --url https://maximilianopizarro.github.io/jhipster-online-hel
 - [Application Source Code](https://github.com/redhat-developer-demos/jhipster-online)
 - [Artifact Hub](https://artifacthub.io/packages/helm/jhipster-online/jhipster-online)
 - [Container Images (Quay.io)](https://quay.io/repository/maximilianopizarro/jhipster-online)
-- [Diagramas del README (`image/`)](image/README.md)
+- [README diagram assets (`image/`)](image/README.md)
 - [Release Notes 2.40.0](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.40.0.md)
 
 Try on Red Hat OpenShift Dev Spaces — search "JHipster Online" in the sample catalog:
