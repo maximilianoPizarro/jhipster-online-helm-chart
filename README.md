@@ -155,6 +155,22 @@ helm upgrade --install jhipster-online . -n <your-dev-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
+#### Upgrade (Developer Sandbox, without cloning this repo)
+
+Use the published chart and the same overlay from GitHub (merges on top of the chart defaults):
+
+```bash
+oc project <your-dev-namespace>
+
+helm repo update
+helm upgrade --install jhipster-online jhipster-online/jhipster-online \
+  --version 1.1.0 -n <your-dev-namespace> \
+  -f https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/values-openshift-sandbox.example.yaml \
+  --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
+```
+
+Add extra `--set-string` flags or a second `-f my-secrets.yaml` for GitHub OAuth (`APPLICATION_GITHUB_CLIENT-ID`, `APPLICATION_GITHUB_CLIENT-SECRET`, etc.). Then watch the rollout: `oc rollout status deployment/jhipster-online -n <your-dev-namespace>`.
+
 If you **do not** need to deploy generated apps into the cluster from the UI, omit the second `-f` (or set `openshift.grantEditRoleToServiceAccount: false` in your own overlay).
 
 - **JDL AI**: by default three models in `sandbox-shared-models` and `APPLICATION_JDL_AI_INSECURE_TLS=true`.

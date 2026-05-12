@@ -2,6 +2,11 @@
 # Use after base values.yaml, e.g.:
 #   helm upgrade --install jhipster-online . -n <your-dev-namespace> \
 #     -f values.yaml -f values-openshift-sandbox.example.yaml
+# Or from the published chart (no clone):
+#   helm repo update && helm upgrade --install jhipster-online jhipster-online/jhipster-online \
+#     --version 1.1.0 -n <your-dev-namespace> \
+#     -f https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/values-openshift-sandbox.example.yaml \
+#     --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 #
 # Before install:
 # 1) oc login ... && oc project <your-dev-namespace>
