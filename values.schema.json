@@ -289,15 +289,6 @@
                 "SPRING_DATASOURCE_PASSWORD": {
                     "type": "string"
                 },
-                "OPENSHIFT_TEKTON_URL-PIPELINE": {
-                    "type": "string"
-                },
-                "OPENSHIFT_DEVSPACE_URL-DEVFILE": {
-                    "type": "string"
-                },
-                "OPENSHIFT_BACKSTAGE_URL-BACKSTAGE": {
-                    "type": "string"
-                },
                 "APPLICATION_JDL_AI_ENABLED": {
                     "type": "string",
                     "description": "Enable JDL AI assistant (true/false)",

@@ -196,11 +196,12 @@ env:
   SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/jhipsteronline
   SPRING_DATASOURCE_USERNAME: jhipster
   SPRING_DATASOURCE_PASSWORD: jhipster
-  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-pipeline-quarkus.yaml"
-  OPENSHIFT_DEVSPACE_URL-DEVFILE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-devspaces.yaml"
-  OPENSHIFT_BACKSTAGE_URL-BACKSTAGE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/catalog-info.yaml"
+  # OpenShift generator: devfile, Tekton, and Helm scaffold templates ship inside the application
+  # (classpath: helm-template/, repo-root-template/). Do not set raw GitHub URLs — external kubernetes/*.yaml
+  # pipeline/devfile URLs were removed upstream (see redhat-developer-demos/jhipster-online).
+  # Optional Backstage catalog entity file still in the repo: src/main/kubernetes/catalog-info.yaml
   # JDL AI assistant — models served via KServe/vLLM in sandbox-shared-models namespace.
-  # See https://github.com/redhat-developer-demos/jhipster-online README § "Optional JDL AI assistant".
+  # See https://github.com/redhat-developer-demos/jhipster-online README ("Optional JDL AI assistant").
   APPLICATION_JDL_AI_ENABLED: "true"
   APPLICATION_JDL_AI_INSECURE_TLS: "true"
   APPLICATION_JDL_AI_DEFAULT_MODEL_ID: granite-31-8b
@@ -219,7 +220,7 @@ env:
   APPLICATION_JDL_AI_MODELS_0_MODEL: isvc-granite-31-8b-fp8
   APPLICATION_JDL_AI_MODELS_0_API_URL: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   # Model 1 — NVIDIA Nemotron Nano 9B v2 (FP8)
-  APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b
+  APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b-v2
   APPLICATION_JDL_AI_MODELS_1_LABEL: "NVIDIA Nemotron Nano 9B v2 (FP8)"
   APPLICATION_JDL_AI_MODELS_1_MODEL: isvc-nemotron-nano-9b-v2-fp8
   APPLICATION_JDL_AI_MODELS_1_API_URL: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"

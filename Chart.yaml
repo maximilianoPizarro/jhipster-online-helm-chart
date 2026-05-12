@@ -9,6 +9,7 @@ description: >-
   container uses imagePullPolicy Always. JDL AI supports lexical and optional semantic
   RAG plus configurable HTTP timeouts. Defaults add JAVA_OPTS_APPEND (UTF-8 and
   MaxRAMPercentage for cgroup-friendly heap) and pod CPU/memory requests and limits.
+  OpenShift generator templates are bundled in the app (no OPENSHIFT_* raw URL env vars).
 
 # OpenShift 4.12+ ships Kubernetes 1.25; Developer Sandbox and current OCP are well above this floor.
 kubeVersion: ">=1.25.0-0"

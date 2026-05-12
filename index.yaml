@@ -23,7 +23,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.1
-    created: "2026-05-12T17:26:22.4333127-03:00"
+    created: "2026-05-12T18:26:50.1490661-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.40.1). Includes generator-jhipster 9.0.0, generator-jhipster-quarkus 3.6.0,
       a JDL Studio sidecar, MariaDB, an OpenShift Route, and optional in-cluster deploy
@@ -32,8 +32,9 @@ entries:
       the main container uses imagePullPolicy Always. JDL AI supports lexical and
       optional semantic RAG plus configurable HTTP timeouts. Defaults add JAVA_OPTS_APPEND
       (UTF-8 and MaxRAMPercentage for cgroup-friendly heap) and pod CPU/memory requests
-      and limits.'
-    digest: 5b10f92299e3debdd9d988ac617cc0bfea91543e22cbaaf81424455ee859e2c9
+      and limits. OpenShift generator templates are bundled in the app (no OPENSHIFT_*
+      raw URL env vars).'
+    digest: ffdcc767fdd705ced88ed216f17eb1adf1a4eff51a0f4ac28c7353a024019d7f
     home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
     icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
     keywords:
@@ -54,7 +55,7 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.1.0.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.1.0.tgz
     version: 1.1.0
   - annotations:
       artifacthub.io/containsSecurityUpdates: "false"
@@ -78,7 +79,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.0
-    created: "2026-05-12T17:26:22.4283151-03:00"
+    created: "2026-05-12T18:26:50.1432606-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
@@ -104,13 +105,13 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.0.4.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.0.4.tgz
     version: 1.0.4
   - annotations:
       charts.openshift.io/name: JHipster Online
     apiVersion: v2
     appVersion: 2.33.0
-    created: "2026-05-12T17:26:22.4182416-03:00"
+    created: "2026-05-12T18:26:50.1391025-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. - generator-jhipster-quarkus
       3.4.0 for generate Quarkus 3.11.1 projects. - JDL Studio for add JDL models
@@ -133,6 +134,6 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-0.1.0.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-12T17:26:22.4162467-03:00"
+generated: "2026-05-12T18:26:50.1380668-03:00"

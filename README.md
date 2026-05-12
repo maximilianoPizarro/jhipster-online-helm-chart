@@ -114,7 +114,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21** runtime per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** on main container; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources** requests/limits; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/` |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21** runtime per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** on main container; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources** requests/limits; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/`; OpenShift generator uses **embedded** devfile/Tekton/Helm templates (no `OPENSHIFT_*` raw GitHub URL env vars; aligns with upstream removal of externalized `kubernetes/*.yaml`) |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -191,13 +191,14 @@ env:
 
 ### Generator Mode (Quarkus / Spring Boot)
 
+The OpenShift generator reads **Tekton pipelines, Devfile, and Helm scaffold templates from the application bundle** (classpath `helm-template/` and related resources in [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)). Upstream removed standalone `kubernetes/*.yaml` files that used to be referenced by URL; the chart does **not** set `OPENSHIFT_TEKTON_URL-PIPELINE`, `OPENSHIFT_DEVSPACE_URL-DEVFILE`, or `OPENSHIFT_BACKSTAGE_URL-BACKSTAGE`.
+
 **Quarkus** (default):
 
 ```yaml
 # values.yaml
 env:
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
-  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/.../jhipster-pipeline-quarkus.yaml"
 image:
   tag: "2.40.1-quarkus"
 ```
@@ -208,7 +209,6 @@ image:
 # values.yaml
 env:
   APPLICATION_JHIPSTER-CMD_CMD: jhipster
-  OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/.../jhipster-pipeline.yaml"
 image:
   tag: "2.40.1-spring-boot"
 ```
@@ -230,11 +230,9 @@ env:
 
 ### Developer Hub and Dev Spaces
 
-```yaml
-env:
-  OPENSHIFT_DEVSPACE_URL-DEVFILE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/jhipster-devspaces.yaml"
-  OPENSHIFT_BACKSTAGE_URL-BACKSTAGE: "https://raw.githubusercontent.com/redhat-developer-demos/jhipster-online/main/src/main/kubernetes/catalog-info.yaml"
-```
+**Dev Spaces / Devfile**: the Devfile content used when generating OpenShift projects is **bundled with the application**, not loaded from a `raw.githubusercontent.com` URL.
+
+**Backstage / Developer Hub**: if you register the service in a Backstage catalog, you can still point at the upstream **catalog entity** file in the repo: [catalog-info.yaml](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/kubernetes/catalog-info.yaml) (`src/main/kubernetes/catalog-info.yaml`). That is optional catalog metadata only; it is separate from the generator’s embedded templates.
 
 ### JDL AI Assistant (OpenShift AI Models)
 
@@ -256,7 +254,7 @@ The **Design Entities** page shows an **AI-assisted JDL draft** panel when `APPL
 | Model | ID | vLLM Model ID | Context Length |
 |-------|-----|---------------|----------------|
 | IBM Granite 3.1 8B Instruct | `granite-31-8b` | `isvc-granite-31-8b-fp8` | 65536 |
-| NVIDIA Nemotron Nano 9B v2 | `nemotron-nano-9b` | `isvc-nemotron-nano-9b-v2-fp8` | 65536 |
+| NVIDIA Nemotron Nano 9B v2 | `nemotron-nano-9b-v2` | `isvc-nemotron-nano-9b-v2-fp8` | 65536 |
 | Qwen 3 8B | `qwen3-8b` | `isvc-qwen3-8b-fp8` | 40960 |
 
 All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-models` namespace with FP8 quantization.
@@ -311,7 +309,7 @@ env:
   APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B Instruct (FP8)"
   APPLICATION_JDL_AI_MODELS_0_MODEL: isvc-granite-31-8b-fp8
   APPLICATION_JDL_AI_MODELS_0_API_URL: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
-  APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b
+  APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b-v2
   APPLICATION_JDL_AI_MODELS_1_LABEL: "NVIDIA Nemotron Nano 9B v2 (FP8)"
   APPLICATION_JDL_AI_MODELS_1_MODEL: isvc-nemotron-nano-9b-v2-fp8
   APPLICATION_JDL_AI_MODELS_1_API_URL: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
