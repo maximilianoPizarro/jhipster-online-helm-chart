@@ -8,11 +8,11 @@ replicaCount: 1
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: quay.io/maximilianopizarro/jhipster-online
-  # This sets the pull policy for images.
-  # Use Always when the tag is reused (e.g. internal registry :quarkus after binary rebuilds).
-  pullPolicy: IfNotPresent
-  # Overrides the image tag (use 2.40.0-quarkus or 2.40.0-spring-boot for runtime images).
-  tag: "2.40.0-quarkus"
+  # Pull policy for the jhipster-online container only (see templates/deployment.yaml).
+  # Always: each new pod pulls the image again — use when the tag is reused or you want the latest digest from the registry (same as oc patch … imagePullPolicy: Always).
+  pullPolicy: Always
+  # Overrides the image tag (use 2.40.1-quarkus or 2.40.1-spring-boot for runtime images).
+  tag: "2.40.1-quarkus"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -185,8 +185,13 @@ kuadrant:
   keycloakIssuerUri: ""
 
 env:
-  JAVA_APP_JAR: jhonline-2.40.0.war
+  # OpenShift Java image convention: WAR under /deployments (see image Dockerfile / S2I output).
+  JAVA_APP_JAR: /deployments/jhonline.war
   LOGGING_PATTERN_CONSOLE: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{40} - %msg%n"
+  # Startup / console readability (Spring Boot). Relaxed binding: spring.main.banner-mode, spring.output.ansi.enabled
+  # off = no ASCII banner; never = no ANSI color codes (cleaner in OpenShift log view / Loki).
+  SPRING_MAIN_BANNER_MODE: "off"
+  SPRING_OUTPUT_ANSI_ENABLED: "never"
   APPLICATION_GITHUB_HOST: https://github.com
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
@@ -205,6 +210,11 @@ env:
   APPLICATION_JDL_AI_RAG_ENABLED: "true"
   APPLICATION_JDL_AI_RAG_TOP_K: "6"
   APPLICATION_JDL_AI_RAG_MAX_CHARS: "14000"
+  APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED: "false"
+  APPLICATION_JDL_AI_EMBEDDINGS_URL: ""
+  APPLICATION_JDL_AI_EMBEDDINGS_MODEL: "text-embedding-3-small"
+  APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS: "15000"
+  APPLICATION_JDL_AI_READ_TIMEOUT_MS: "120000"
   APPLICATION_JDL_AI_HELP_TEXT: "Drafts are suggestions — always review in JDL Studio before applying."
   # Model 0 — IBM Granite 3.1 8B Instruct (FP8)
   APPLICATION_JDL_AI_MODELS_0_ID: granite-31-8b

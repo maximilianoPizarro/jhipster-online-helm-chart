@@ -2,9 +2,10 @@ apiVersion: v2
 name: jhipster-online
 description: "Stack with JHipster Online on Red Hat OpenShift.
             This Artifact include:
-             - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
+             - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.1).
              - generator-jhipster-quarkus 3.6.0 for Quarkus projects.
-             - JDL Studio for add JDL models files by PR on your repo."
+             - JDL Studio for add JDL models files by PR on your repo.
+             - Chart 1.1.0: Quay 2.40.1-* images, WAR /deployments/jhonline.war, imagePullPolicy Always (main), JDL AI RAG/timeouts, banner/ANSI log defaults."
 
 kubeVersion: ">=1.20.0"
 
@@ -33,13 +34,13 @@ keywords:
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.4
+version: 1.1.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.40.0"
+appVersion: "2.40.1"
 
 home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
 
@@ -60,12 +61,12 @@ annotations:
   charts.openshift.io/provider: Red Hat Developer Demos
   charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
   artifacthub.io/license: Apache-2.0
-  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/containsSecurityUpdates: "true"
   artifacthub.io/images: |
     - name: jhipster-online-quarkus
-      image: quay.io/maximilianopizarro/jhipster-online:2.40.0-quarkus
+      image: quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus
     - name: jhipster-online-spring-boot
-      image: quay.io/maximilianopizarro/jhipster-online:2.40.0-spring-boot
+      image: quay.io/maximilianopizarro/jhipster-online:2.40.1-spring-boot
     - name: jdl-studio
       image: quay.io/maximilianopizarro/jdl-studio:latest
   artifacthub.io/links: |

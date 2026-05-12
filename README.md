@@ -25,12 +25,14 @@
   - [From Helm Repository](#from-helm-repository)
   - [Red Hat Developer Sandbox (local chart)](#red-hat-developer-sandbox-local-chart)
 - [Configuration](#configuration)
+  - [Console logs (banner and ANSI)](#console-logs-banner-and-ansi)
   - [Generator Mode (Quarkus / Spring Boot)](#generator-mode-quarkus--spring-boot)
   - [GitHub OAuth](#github-oauth)
   - [Developer Hub and Dev Spaces](#developer-hub-and-dev-spaces)
   - [JDL AI Assistant (OpenShift AI Models)](#jdl-ai-assistant-openshift-ai-models)
   - [OpenShift Route and Kuadrant](#openshift-route-and-kuadrant)
   - [RBAC for In-Cluster Deploy](#rbac-for-in-cluster-deploy)
+- [Security Considerations](#security-considerations)
 - [Values Reference](#values-reference)
 - [JDL Studio](#jdl-studio)
 - [Packaging](#packaging)
@@ -40,9 +42,9 @@
 
 ## Overview
 
-This Helm chart deploys **JHipster Online 2.40.0** on Red Hat OpenShift. The stack includes:
+This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The stack includes:
 
-- **JHipster Online 2.40.0** — web UI for generating JHipster applications without local installation
+- **JHipster Online 2.40.1** — web UI for generating JHipster applications without local installation
 - **generator-jhipster 9.0.0** — generates Spring Boot 3.4+ / Java 21 projects
 - **generator-jhipster-quarkus 3.6.0** — generates Quarkus projects
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
@@ -55,46 +57,17 @@ Source application: [redhat-developer-demos/jhipster-online](https://github.com/
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        OpenShift Namespace                          │
-│                                                                     │
-│  ┌─────────────────────────────────────────────┐   ┌─────────────┐ │
-│  │         Deployment: jhipster-online          │   │  MariaDB    │ │
-│  │                                              │   │  Deployment │ │
-│  │  ┌──────────────────┐  ┌──────────────────┐ │   │             │ │
-│  │  │  jhipster-online │  │   jdl-studio     │ │   │  Port 3306  │ │
-│  │  │  (Spring Boot)   │  │   (nginx)        │ │   └──────┬──────┘ │
-│  │  │                  │  │                  │ │          │        │
-│  │  │  Port 8080       │  │  Port 8081       │ │   jdbc://mariadb  │
-│  │  │  /management/    │  │  /jdl-studio/    │ │          │        │
-│  │  │  /api/*          │  │                  │ │          │        │
-│  │  └────────┬─────────┘  └──────────────────┘ │          │        │
-│  │           │                                  │          │        │
-│  └───────────┼──────────────────────────────────┘          │        │
-│              │                                             │        │
-│  ┌───────────▼───────┐    ┌────────────────────┐          │        │
-│  │  Service (8080)   │    │   ConfigMap:       │          │        │
-│  │  + Route (TLS)    │    │   nginx-conf       │          │        │
-│  └───────────────────┘    │   (proxy 8081→app) │          │        │
-│                            └────────────────────┘          │        │
-│                                                            │        │
-│  ┌─────────────────────────────────────────────────────────┘        │
-│  │  sandbox-shared-models (KServe / vLLM)                          │
-│  │  ┌──────────────┐ ┌──────────────────┐ ┌──────────────┐        │
-│  │  │ Granite 3.1  │ │ Nemotron Nano 9B │ │   Qwen 3 8B  │        │
-│  │  │   8B FP8     │ │    v2 FP8        │ │     FP8      │        │
-│  │  │  :8443/v1/   │ │   :8443/v1/      │ │  :8443/v1/   │        │
-│  │  └──────────────┘ └──────────────────┘ └──────────────┘        │
-│  └─────────────────────────────────────────────────────────        │
-└─────────────────────────────────────────────────────────────────────┘
-```
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/image/architecture-diagram.png" width="900" alt="JHipster Online on OpenShift — deployment topology (diagram)">
+</p>
+
+> Diagram source: [nanobanana](https://www.npmjs.com/package/@factory/nanobanana) (Gemini) or local script — see [image/README.md](image/README.md). Regenerate with `GEMINI_API_KEY` or run `python scripts/render_diagrams.py` from the repo root.
 
 ### Component Summary
 
 | Component | Image | Port | Purpose |
 |-----------|-------|------|---------|
-| jhipster-online | `quay.io/maximilianopizarro/jhipster-online:2.40.0-quarkus` | 8080 | Spring Boot app — generation, Git push, Fabric8 deploy, JDL AI |
+| jhipster-online | `quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus` | 8080 | Spring Boot app — generation, Git push, Fabric8 deploy, JDL AI |
 | jdl-studio | `quay.io/maximilianopizarro/jdl-studio` | 8081 | nginx sidecar serving JDL Studio UI |
 | mariadb | `registry.redhat.io/rhel8/mariadb-103` | 3306 | Persistent database |
 | AI models | KServe InferenceServices in `sandbox-shared-models` | 8443 | vLLM OpenAI-compatible endpoints |
@@ -124,12 +97,12 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 
 | Tag | Dockerfile | Base | Generators |
 |-----|-----------|------|------------|
-| `2.40.0-quarkus` (default) | `Dockerfile.quarkus` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
-| `2.40.0-spring-boot` | `Dockerfile.spring-boot` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 |
+| `2.40.1-quarkus` (default) | `Dockerfile.quarkus` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
+| `2.40.1-spring-boot` | `Dockerfile.spring-boot` | UBI8 OpenJDK 17 + Maven 3.9.15 + Node 20 | generator-jhipster 9.0.0 |
 
 **Registry**: `quay.io/maximilianopizarro/jhipster-online`
 
-Set `image.tag` in `values.yaml` and match `env.JAVA_APP_JAR` to `jhonline-2.40.0.war`.
+Set `image.tag` in `values.yaml` and match `env.JAVA_APP_JAR` to the WAR path baked into that image (default: `/deployments/jhonline.war`).
 
 Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0 to avoid breaking existing deployments.
 
@@ -139,6 +112,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
+| **1.1.0** | 2.40.1 | Imágenes `2.40.1-*`; `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** en el contenedor principal; JDL AI (RAG léxico + opción semántica, timeouts); logs más legibles (`SPRING_MAIN_BANNER_MODE`, `SPRING_OUTPUT_ANSI_ENABLED`); diagramas en `image/` |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -155,11 +129,11 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 
 # Install (latest)
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.0.4 -n <your-namespace>
+  --version 1.1.0 -n <your-namespace>
 
 # With AI models token
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.0.4 -n <your-namespace> \
+  --version 1.1.0 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -167,17 +141,22 @@ helm install jhipster-online jhipster-online/jhipster-online \
 
 ### Red Hat Developer Sandbox (local chart)
 
+Recomendado: base + overlay de Sandbox (RBAC `edit` para el ServiceAccount del pod y `OPENSHIFT_DEPLOYMENT_ENABLED` para desplegar desde la UI), y token para los modelos compartidos:
+
 ```bash
 # Login
 oc login --token=... --server=https://api.sandbox...openshift.com:6443
 
-# Install from local chart directory with AI models enabled
 helm upgrade --install jhipster-online . -n <your-dev-namespace> \
+  -f values.yaml \
+  -f values-openshift-sandbox.example.yaml \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
-- **In-cluster deploy**: Set `openshift.grantEditRoleToServiceAccount=true` to create a RoleBinding granting `edit` to the pod's ServiceAccount.
-- **JDL AI**: All three sandbox models (Granite, Nemotron, Qwen) are enabled by default with `APPLICATION_JDL_AI_INSECURE_TLS=true` for in-cluster TLS.
+Si **no** necesitas desplegar apps al clúster desde la UI, omite el segundo `-f` (o pon `openshift.grantEditRoleToServiceAccount: false` en tu propio overlay).
+
+- **JDL AI**: por defecto tres modelos en `sandbox-shared-models` y `APPLICATION_JDL_AI_INSECURE_TLS=true`.
+- **Nueva imagen sin cambiar tag**: con `image.pullPolicy: Always` (por defecto) basta un `oc rollout restart deployment/jhipster-online -n <ns>`.
 
 ### Uninstall
 
@@ -189,6 +168,23 @@ helm uninstall jhipster-online -n <your-namespace>
 
 ## Configuration
 
+### Console logs (banner and ANSI)
+
+JHipster imprime un banner ASCII y colores ANSI al arrancar; en **OpenShift** (`oc logs`, Kibana, Loki) suele molestar. El chart expone variables Spring Boot vía `env`:
+
+| Variable | Valor por defecto | Efecto |
+|----------|-------------------|--------|
+| `SPRING_MAIN_BANNER_MODE` | `off` | Quita el banner multilínea. Usa `console` o `log` si quieres conservarlo. |
+| `SPRING_OUTPUT_ANSI_ENABLED` | `never` | Sin secuencias ANSI; líneas planas y legibles. `detected` deja que Spring decida si hay TTY. |
+
+Opcional: ajusta el formato de línea con `LOGGING_PATTERN_CONSOLE` (ya definido en `values.yaml`).
+
+```yaml
+env:
+  SPRING_MAIN_BANNER_MODE: "off"
+  SPRING_OUTPUT_ANSI_ENABLED: "never"
+```
+
 ### Generator Mode (Quarkus / Spring Boot)
 
 **Quarkus** (default):
@@ -199,7 +195,7 @@ env:
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
   OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/.../jhipster-pipeline-quarkus.yaml"
 image:
-  tag: "2.40.0-quarkus"
+  tag: "2.40.1-quarkus"
 ```
 
 **Spring Boot**:
@@ -210,7 +206,7 @@ env:
   APPLICATION_JHIPSTER-CMD_CMD: jhipster
   OPENSHIFT_TEKTON_URL-PIPELINE: "https://raw.githubusercontent.com/.../jhipster-pipeline.yaml"
 image:
-  tag: "2.40.0-spring-boot"
+  tag: "2.40.1-spring-boot"
 ```
 
 ### GitHub OAuth
@@ -238,7 +234,18 @@ env:
 
 ### JDL AI Assistant (OpenShift AI Models)
 
-The **Design Entities** page includes an AI-assisted JDL draft panel when configured. It uses an OpenAI-compatible `/v1/chat/completions` endpoint with **lexical RAG** over curated JDL reference chunks.
+The **Design Entities** page shows an **AI-assisted JDL draft** panel when `APPLICATION_JDL_AI_ENABLED=true` and at least one OpenAI-compatible completions URL is configured. The backend calls `POST .../v1/chat/completions` (vLLM, KServe, Ollama, OpenAI, etc.).
+
+**RAG (retrieval)**:
+
+- **Lexical** (default): keyword/token overlap over bundled chunks in `rag-chunks.json` from the application image.
+- **Semantic** (optional): embeddings + cosine similarity when `APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED=true` and `APPLICATION_JDL_AI_EMBEDDINGS_URL` points to `POST .../v1/embeddings`. On failure, the app falls back to lexical ranking.
+
+<p align="left">
+<img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/image/ai-rag-flow.png" width="900" alt="JDL AI RAG and inference flow (diagram)">
+</p>
+
+> Regenerate with nanobanana: `nanobanana diagram "RAG pipeline for JDL AI…" --type=flowchart` then save as `image/ai-rag-flow.png`.
 
 #### Available Models (Developer Sandbox)
 
@@ -250,7 +257,38 @@ The **Design Entities** page includes an AI-assisted JDL draft panel when config
 
 All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-models` namespace with FP8 quantization.
 
-#### Configuration (values.yaml)
+#### Quick start (Helm)
+
+```bash
+helm upgrade --install jhipster-online jhipster-online/jhipster-online \
+  --version 1.1.0 -n <your-namespace> \
+  --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
+```
+
+#### Full configuration reference (environment variables)
+
+Spring maps dotted YAML to env with underscores and uppercase; the chart uses the `APPLICATION_JDL_AI_*` keys below.
+
+| Env variable | Default in chart | Purpose |
+|--------------|------------------|---------|
+| `APPLICATION_JDL_AI_ENABLED` | `true` | Feature gate (assistant visible only if enabled **and** a completions URL exists). |
+| `APPLICATION_JDL_AI_INSECURE_TLS` | `true` | Trust self-signed / cluster TLS for upstream HTTP clients (typical on Sandbox). Use `false` with proper CA bundles in production. |
+| `APPLICATION_JDL_AI_DEFAULT_MODEL_ID` | `granite-31-8b` | Default entry in the UI model picker when `models[]` is configured. |
+| `APPLICATION_JDL_AI_API_KEY` | *(empty)* | `Authorization: Bearer …` for chat **and** embeddings. Prefer `--set-string` or a Secret — never commit tokens. |
+| `APPLICATION_JDL_AI_RAG_ENABLED` | `true` | Lexical RAG on/off. |
+| `APPLICATION_JDL_AI_RAG_TOP_K` | `6` | Number of chunks to inject. |
+| `APPLICATION_JDL_AI_RAG_MAX_CHARS` | `14000` | Character budget for RAG context in the system prompt. |
+| `APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED` | `false` | When `true`, rank chunks with embeddings + cosine similarity (requires embeddings URL). |
+| `APPLICATION_JDL_AI_EMBEDDINGS_URL` | *(empty)* | OpenAI-compatible `POST .../v1/embeddings` URL (required for semantic RAG). |
+| `APPLICATION_JDL_AI_EMBEDDINGS_MODEL` | `text-embedding-3-small` | Model id in the embeddings JSON body. |
+| `APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS` | `15000` | Connect timeout to completions/embeddings upstream. |
+| `APPLICATION_JDL_AI_READ_TIMEOUT_MS` | `120000` | Read timeout for long generations. |
+| `APPLICATION_JDL_AI_HELP_TEXT` | *(see values.yaml)* | Hint shown under the assistant card in the UI. |
+| `APPLICATION_JDL_AI_MODELS_*_{ID,LABEL,MODEL,API_URL}` | *(3 models)* | Multi-model picker; index `0`, `1`, `2` in env names as in `values.yaml`. |
+
+For property names in YAML (e.g. `application.jdl-ai.rag-semantic-enabled`), see the [application README — JDL AI assistant](https://github.com/redhat-developer-demos/jhipster-online#jdl-ai-assistant-models-rag-embeddings).
+
+#### Multi-model `values.yaml` example
 
 ```yaml
 env:
@@ -260,24 +298,81 @@ env:
   APPLICATION_JDL_AI_RAG_ENABLED: "true"
   APPLICATION_JDL_AI_RAG_TOP_K: "6"
   APPLICATION_JDL_AI_RAG_MAX_CHARS: "14000"
-  # Model 0
+  APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED: "false"
+  APPLICATION_JDL_AI_EMBEDDINGS_URL: ""
+  APPLICATION_JDL_AI_EMBEDDINGS_MODEL: "text-embedding-3-small"
+  APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS: "15000"
+  APPLICATION_JDL_AI_READ_TIMEOUT_MS: "120000"
   APPLICATION_JDL_AI_MODELS_0_ID: granite-31-8b
   APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B Instruct (FP8)"
   APPLICATION_JDL_AI_MODELS_0_MODEL: isvc-granite-31-8b-fp8
   APPLICATION_JDL_AI_MODELS_0_API_URL: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
-  # ... (models 1 and 2 follow the same pattern)
+  APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b
+  APPLICATION_JDL_AI_MODELS_1_LABEL: "NVIDIA Nemotron Nano 9B v2 (FP8)"
+  APPLICATION_JDL_AI_MODELS_1_MODEL: isvc-nemotron-nano-9b-v2-fp8
+  APPLICATION_JDL_AI_MODELS_1_API_URL: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
+  APPLICATION_JDL_AI_MODELS_2_ID: qwen3-8b
+  APPLICATION_JDL_AI_MODELS_2_LABEL: "Qwen 3 8B (FP8)"
+  APPLICATION_JDL_AI_MODELS_2_MODEL: isvc-qwen3-8b-fp8
+  APPLICATION_JDL_AI_MODELS_2_API_URL: "https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
+  APPLICATION_JDL_AI_API_KEY: ""   # set at install with --set-string or External Secrets
 ```
 
-#### Authentication
+#### Single-model / external endpoint (Ollama, OpenAI, route on cluster)
 
-The models require a Bearer token. Pass it at install time:
+Use either one global URL (via Spring `application.jdl-ai.api-url` / matching env in your image) or a single `APPLICATION_JDL_AI_MODELS_0_*` entry. Example pattern for a single route:
 
-```bash
-helm upgrade --install jhipster-online . \
-  --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
+```yaml
+env:
+  APPLICATION_JDL_AI_ENABLED: "true"
+  APPLICATION_JDL_AI_DEFAULT_MODEL_ID: my-model
+  APPLICATION_JDL_AI_MODELS_0_ID: my-model
+  APPLICATION_JDL_AI_MODELS_0_LABEL: "My vLLM"
+  APPLICATION_JDL_AI_MODELS_0_MODEL: my-serving-knative-name
+  APPLICATION_JDL_AI_MODELS_0_API_URL: "https://my-model-predictor-my-ns.apps.example.com/v1/chat/completions"
 ```
 
-For full documentation, see the [JDL AI assistant section](https://github.com/redhat-developer-demos/jhipster-online#optional-jdl-ai-assistant-openshift--sandbox-models) in the application README.
+#### Authentication and secrets
+
+| Approach | When to use |
+|----------|----------------|
+| `helm --set-string env.APPLICATION_JDL_AI_API_KEY=…` | Quick Sandbox demos (`oc whoami -t`). |
+| Kubernetes `Secret` + `envFrom` / workload patch | Production; rotate token without editing Helm values. |
+| [External Secrets Operator](https://external-secrets.io/) | Sync from Vault / cloud secret manager; no plaintext in Git. |
+
+Never store long-lived API keys in Git. Treat `APPLICATION_JDL_AI_API_KEY` like any other credential.
+
+#### Semantic RAG example
+
+```yaml
+env:
+  APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED: "true"
+  APPLICATION_JDL_AI_EMBEDDINGS_URL: "https://your-embeddings-route.apps.example.com/v1/embeddings"
+  APPLICATION_JDL_AI_EMBEDDINGS_MODEL: "text-embedding-3-small"
+```
+
+#### Health monitoring
+
+Actuator **`GET /management/health`** includes a **`jdlAi`** component: whether a completions URL is configured and the feature is wired. Use the existing chart readiness probe on `/management/health` to surface a not-ready pod if health aggregation is configured accordingly, or scrape the JSON for dashboards.
+
+#### REST API (application)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/jdl-ai/config` | Enabled flag, help text, RAG options, default model id, model list. |
+| POST | `/api/jdl-ai/generate` | Body: `{ "prompt": "…", "modelId": "…" }` — returns JDL draft or 502/503 on misconfiguration / upstream errors. |
+
+#### Troubleshooting
+
+| Symptom | Things to check |
+|---------|------------------|
+| Assistant missing in UI | `APPLICATION_JDL_AI_ENABLED`, at least one model URL, image version supports JDL AI. |
+| 401/403 from model route | `APPLICATION_JDL_AI_API_KEY`, token expiry, SAR for `sandbox-shared-models`. |
+| TLS / handshake errors | `APPLICATION_JDL_AI_INSECURE_TLS=true` only if appropriate; prefer proper CA trust in prod. |
+| Timeouts on long prompts | Raise `APPLICATION_JDL_AI_READ_TIMEOUT_MS`. |
+| Semantic RAG does nothing | `APPLICATION_JDL_AI_EMBEDDINGS_URL` set, `RAG_SEMANTIC_ENABLED=true`, embedding model compatible. |
+
+For full upstream documentation, see [JDL AI assistant (models, RAG, embeddings)](https://github.com/redhat-developer-demos/jhipster-online#jdl-ai-assistant-models-rag-embeddings) in the application README.
 
 ### OpenShift Route and Kuadrant
 
@@ -305,6 +400,35 @@ openshift:
 
 This creates a RoleBinding granting the built-in `edit` ClusterRole to the ServiceAccount used by the Deployment.
 
+> **Least privilege:** Prefer a dedicated ServiceAccount and the minimal `Role` / `ClusterRole` from [`src/main/kubernetes/rbac.yaml`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/kubernetes/rbac.yaml) (`jhipster-online-deployer`) instead of namespace-wide `edit` when your cluster policy allows it.
+
+---
+
+## Security Considerations
+
+### JWT signing (`jhipster.security.authentication.jwt`)
+
+JHipster Online uses JWT for API security. In production:
+
+- Configure `jhipster.security.authentication.jwt.base64-secret` (or key store) via **environment variables or mounted secrets**, not committed YAML.
+- Plan **rotation** (new key + staged rollout); document who owns secrets (Vault, OpenShift secrets, ESO).
+
+### HTTPS
+
+Terminate TLS at the OpenShift Route / Ingress or an edge proxy. Do not expose plain HTTP for production OAuth callbacks.
+
+### Workload identity for OpenShift deploy
+
+The chart can grant **`edit`** to the pod ServiceAccount for Fabric8 in-cluster deploys. That is broad. Where possible:
+
+1. Create a **dedicated** `ServiceAccount` (`serviceAccount.create: true` + `name`).
+2. Bind only the rules required from `rbac.yaml` instead of `edit`.
+3. Avoid running as `default` SA in shared namespaces.
+
+### AI credentials
+
+Treat `APPLICATION_JDL_AI_API_KEY` like any cloud API key: short-lived tokens where possible, Secret/ESO injection, and audit access to `sandbox-shared-models`.
+
 ---
 
 ## Values Reference
@@ -313,8 +437,8 @@ This creates a RoleBinding granting the built-in `edit` ClusterRole to the Servi
 |-----|------|---------|-------------|
 | `replicaCount` | int | `1` | Number of replicas |
 | `image.repository` | string | `quay.io/maximilianopizarro/jhipster-online` | Container image registry |
-| `image.tag` | string | `2.40.0-quarkus` | Image tag |
-| `image.pullPolicy` | string | `IfNotPresent` | Pull policy |
+| `image.tag` | string | `2.40.1-quarkus` | Image tag |
+| `image.pullPolicy` | string | `Always` | Pull policy for the **jhipster-online** container (`imagePullPolicy`); use `IfNotPresent` to reduce pulls if your tag is immutable |
 | `service.type` | string | `ClusterIP` | Service type |
 | `service.port` | int | `8080` | Service port |
 | `route.enabled` | bool | `true` | Create OpenShift Route |
@@ -322,10 +446,20 @@ This creates a RoleBinding granting the built-in `edit` ClusterRole to the Servi
 | `autoscaling.enabled` | bool | `false` | Enable HPA |
 | `openshift.grantEditRoleToServiceAccount` | bool | `false` | Bind `edit` role to pod SA |
 | `kuadrant.enabled` | bool | `false` | Enable Kuadrant policies |
+| `env.JAVA_APP_JAR` | string | `/deployments/jhonline.war` | WAR path inside the container (must match the image layout) |
+| `env.SPRING_MAIN_BANNER_MODE` | string | `"off"` | Spring Boot banner: `off` / `console` / `log` |
+| `env.SPRING_OUTPUT_ANSI_ENABLED` | string | `"never"` | ANSI in console: `never` / `always` / `detected` |
+| `env.LOGGING_PATTERN_CONSOLE` | string | *(pattern)* | Log line format (`logging.pattern.console`) |
 | `env.APPLICATION_JDL_AI_ENABLED` | string | `"true"` | Enable JDL AI assistant |
 | `env.APPLICATION_JDL_AI_DEFAULT_MODEL_ID` | string | `granite-31-8b` | Default AI model |
 | `env.APPLICATION_JDL_AI_API_KEY` | string | `""` | Bearer token for model auth |
-| `env.APPLICATION_JDL_AI_RAG_ENABLED` | string | `"true"` | Enable RAG context |
+| `env.APPLICATION_JDL_AI_RAG_ENABLED` | string | `"true"` | Lexical RAG |
+| `env.APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED` | string | `"false"` | Semantic RAG (embeddings) |
+| `env.APPLICATION_JDL_AI_EMBEDDINGS_URL` | string | `""` | Embeddings endpoint URL |
+| `env.APPLICATION_JDL_AI_EMBEDDINGS_MODEL` | string | `text-embedding-3-small` | Embeddings model id |
+| `env.APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS` | string | `"15000"` | Upstream connect timeout |
+| `env.APPLICATION_JDL_AI_READ_TIMEOUT_MS` | string | `"120000"` | Upstream read timeout |
+| `env.APPLICATION_JDL_AI_INSECURE_TLS` | string | `"true"` | Trust insecure TLS to models (dev/Sandbox) |
 
 ---
 
@@ -348,11 +482,16 @@ This creates a RoleBinding granting the built-in `edit` ClusterRole to the Servi
 
 ## Packaging
 
+Publicar en **GitHub Pages** (repositorio del chart): tras empaquetar, **sube también** `charts/jhipster-online-*.tgz` e `index.yaml` en el mismo commit para que `helm repo update` vea la nueva versión o digest.
+
 ```bash
+# Optional: regenerate README / Artifact Hub diagrams (no API key)
+python scripts/render_diagrams.py
+
 # Package chart
 helm package -u . -d charts
 
-# Regenerate index
+# Regenerate index (merge keeps entradas anteriores del repo)
 helm repo index . --url https://maximilianopizarro.github.io/jhipster-online-helm-chart/ --merge index.yaml
 ```
 
@@ -364,7 +503,7 @@ helm repo index . --url https://maximilianopizarro.github.io/jhipster-online-hel
 - [Application Source Code](https://github.com/redhat-developer-demos/jhipster-online)
 - [Artifact Hub](https://artifacthub.io/packages/helm/jhipster-online/jhipster-online)
 - [Container Images (Quay.io)](https://quay.io/repository/maximilianopizarro/jhipster-online)
-- [Architecture Spec](https://github.com/redhat-developer-demos/jhipster-online/blob/main/ARCHITECTURE.md)
+- [Diagramas del README (`image/`)](image/README.md)
 - [Release Notes 2.40.0](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.40.0.md)
 
 Try on Red Hat OpenShift Dev Spaces — search "JHipster Online" in the sample catalog:

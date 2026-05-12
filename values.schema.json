@@ -15,11 +15,12 @@
                 },
                 "pullPolicy": {
                     "type": "string",
+                    "description": "imagePullPolicy for the jhipster-online container only (Always recommended when tags are reused)",
                     "enum": ["Always", "IfNotPresent", "Never"]
                 },
                 "tag": {
                     "type": "string",
-                    "description": "Image tag (2.40.0-quarkus or 2.40.0-spring-boot)"
+                    "description": "Image tag (2.40.1-quarkus or 2.40.1-spring-boot)"
                 }
             }
         },
@@ -257,10 +258,20 @@
             "properties": {
                 "JAVA_APP_JAR": {
                     "type": "string",
-                    "description": "WAR file name inside the image"
+                    "description": "Path to the WAR inside the container (e.g. /deployments/jhonline.war for OpenShift Java images)"
                 },
                 "LOGGING_PATTERN_CONSOLE": {
                     "type": "string"
+                },
+                "SPRING_MAIN_BANNER_MODE": {
+                    "type": "string",
+                    "description": "Spring Boot spring.main.banner-mode: off | console | log",
+                    "enum": ["off", "console", "log"]
+                },
+                "SPRING_OUTPUT_ANSI_ENABLED": {
+                    "type": "string",
+                    "description": "Spring Boot spring.output.ansi.enabled: never | always | detected",
+                    "enum": ["never", "always", "detected"]
                 },
                 "APPLICATION_GITHUB_HOST": {
                     "type": "string"
@@ -319,6 +330,27 @@
                 "APPLICATION_JDL_AI_RAG_MAX_CHARS": {
                     "type": "string",
                     "description": "Max characters of RAG context"
+                },
+                "APPLICATION_JDL_AI_RAG_SEMANTIC_ENABLED": {
+                    "type": "string",
+                    "description": "Enable semantic RAG (embeddings + cosine similarity); requires embeddings URL",
+                    "enum": ["true", "false"]
+                },
+                "APPLICATION_JDL_AI_EMBEDDINGS_URL": {
+                    "type": "string",
+                    "description": "OpenAI-compatible POST .../v1/embeddings URL when semantic RAG is enabled"
+                },
+                "APPLICATION_JDL_AI_EMBEDDINGS_MODEL": {
+                    "type": "string",
+                    "description": "Model id sent in embeddings JSON body"
+                },
+                "APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS": {
+                    "type": "string",
+                    "description": "HTTP connect timeout (ms) to completions/embeddings upstream"
+                },
+                "APPLICATION_JDL_AI_READ_TIMEOUT_MS": {
+                    "type": "string",
+                    "description": "HTTP read timeout (ms) to completions/embeddings upstream"
                 },
                 "APPLICATION_JDL_AI_HELP_TEXT": {
                     "type": "string",

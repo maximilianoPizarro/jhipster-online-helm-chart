@@ -23,7 +23,7 @@ route:
   # Example (replace with your Sandbox apps hostname):
   # host: jhipster-online-myuser-dev.apps.sandbox-m4.p1.openshiftapps.com
 
-# Keep the chart default image (e.g. quay.io/...:2.40.0-quarkus) unless you point to your own
+# Keep the chart default image (e.g. quay.io/...:2.40.1-quarkus) unless you point to your own
 # ImageStream digest after `oc start-build`.
 
 env:
