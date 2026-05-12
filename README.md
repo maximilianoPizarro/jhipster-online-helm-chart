@@ -50,6 +50,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **MariaDB** — database for user data, JDL models, and statistics
+- **Cluster requirement** — Kubernetes **≥ 1.25** (OpenShift **4.12+**); see `kubeVersion` in [Chart.yaml](Chart.yaml).
 
 Source application: [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)
 
