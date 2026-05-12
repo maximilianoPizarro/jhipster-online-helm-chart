@@ -23,7 +23,7 @@
 - [Chart Versions](#chart-versions)
 - [Installation](#installation)
   - [From Helm Repository](#from-helm-repository)
-  - [Red Hat Developer Sandbox (local chart)](#red-hat-developer-sandbox-local-chart)
+  - [Red Hat Developer Sandbox](#red-hat-developer-sandbox)
 - [Configuration](#configuration)
   - [Startup console, JVM, and resources](#startup-console-jvm-and-resources)
   - [Generator Mode (Quarkus / Spring Boot)](#generator-mode-quarkus--spring-boot)
@@ -51,6 +51,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **MariaDB** — database for user data, JDL models, and statistics
 - **Cluster requirement** — Kubernetes **≥ 1.25** (OpenShift **4.12+**); see `kubeVersion` in [Chart.yaml](Chart.yaml).
+- **Developer Sandbox defaults** — a single [values.yaml](values.yaml): Route on, RBAC `edit` for the pod ServiceAccount, in-cluster deploy enabled, JDL AI URLs for `sandbox-shared-models`; set `env.APPLICATION_JDL_AI_API_KEY` at install (e.g. `oc whoami -t`). For other clusters, turn those off in the same file (see [RBAC for In-Cluster Deploy](#rbac-for-in-cluster-deploy)).
 - **Runtime image (upstream)** — [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online) `Dockerfile.quarkus` / `Dockerfile.spring-boot`: **UBI8 OpenJDK 21**, **Node 22.19**, **Maven 3.9.15**, WAR at `/deployments/jhonline.war`.
 
 Source application: [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)
@@ -114,7 +115,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources**; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/`; OpenShift generator **embedded** templates (no raw `OPENSHIFT_*` GitHub URLs); upstream `application-prod.yml` alignment: `APPLICATION_HELM_TEMPLATE_*` (chart-repo packaging on generate), `OPENSHIFT_DEPLOYMENT_*` (Helm CLI deploy, timeout, Fabric8 fallback), JDL model labels per upstream |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **defaults centralized in `values.yaml` for Developer Sandbox** (Route, RBAC `edit`, `OPENSHIFT_DEPLOYMENT_ENABLED`, Sandbox-sized `resources`, shared-model JDL AI URLs); upstream `application-prod.yml` alignment: `APPLICATION_HELM_TEMPLATE_*`, `OPENSHIFT_DEPLOYMENT_*` Helm/Fabric8; no separate overlay file |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -141,23 +142,20 @@ helm install jhipster-online jhipster-online/jhipster-online \
 
 > **Note**: The release name `jhipster-online` is mandatory. Using a different name requires updating the nginx ConfigMap proxy target and restarting the deployment.
 
-### Red Hat Developer Sandbox (local chart)
+### Red Hat Developer Sandbox
 
-Recommended: base `values.yaml` plus the Sandbox overlay (RBAC `edit` for the pod ServiceAccount and `OPENSHIFT_DEPLOYMENT_ENABLED` for in-cluster deploy from the UI), and a bearer token for shared models:
+[values.yaml](values.yaml) is written for a **first try on Red Hat Developer Sandbox**: OpenShift Route, `openshift.grantEditRoleToServiceAccount: true`, `env.OPENSHIFT_DEPLOYMENT_ENABLED: "true"`, CPU/memory limits suited to Sandbox quotas, and JDL AI model URLs under `sandbox-shared-models`. You only need a cluster token for inference.
+
+**From this repository (recommended for Sandbox):**
 
 ```bash
-# Login
 oc login --token=... --server=https://api.sandbox...openshift.com:6443
 
 helm upgrade --install jhipster-online . -n <your-dev-namespace> \
-  -f values.yaml \
-  -f values-openshift-sandbox.example.yaml \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
-#### Upgrade (Developer Sandbox, without cloning this repo)
-
-Use the published chart and the same overlay from GitHub (merges on top of the chart defaults):
+**From the Helm repository** (same packaged defaults; no extra `-f`):
 
 ```bash
 oc project <your-dev-namespace>
@@ -165,15 +163,14 @@ oc project <your-dev-namespace>
 helm repo update
 helm upgrade --install jhipster-online jhipster-online/jhipster-online \
   --version 1.1.0 -n <your-dev-namespace> \
-  -f https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/values-openshift-sandbox.example.yaml \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
-Add extra `--set-string` flags or a second `-f my-secrets.yaml` for GitHub OAuth (`APPLICATION_GITHUB_CLIENT-ID`, `APPLICATION_GITHUB_CLIENT-SECRET`, etc.). Then watch the rollout: `oc rollout status deployment/jhipster-online -n <your-dev-namespace>`.
+Set GitHub OAuth with `--set-string` for `env.APPLICATION_GITHUB_CLIENT-ID` and `env.APPLICATION_GITHUB_CLIENT-SECRET` (or a small secret values file). Watch rollout: `oc rollout status deployment/jhipster-online -n <your-dev-namespace>`.
 
-If you **do not** need to deploy generated apps into the cluster from the UI, omit the second `-f` (or set `openshift.grantEditRoleToServiceAccount: false` in your own overlay).
+**Outside Sandbox** (tighter security or no in-cluster deploy): in the same `values.yaml` (or overrides via `--set`), set `openshift.grantEditRoleToServiceAccount: false`, `env.OPENSHIFT_DEPLOYMENT_ENABLED: "false"`, and adjust `resources` / model URLs as needed.
 
-- **JDL AI**: by default three models in `sandbox-shared-models` and `APPLICATION_JDL_AI_INSECURE_TLS=true`.
+- **JDL AI**: three models in `sandbox-shared-models` and `APPLICATION_JDL_AI_INSECURE_TLS=true` by default.
 - **Same image tag, new digest**: with `image.pullPolicy: Always` (default), run `oc rollout restart deployment/jhipster-online -n <ns>` after the registry is updated.
 
 ### Uninstall
@@ -193,7 +190,7 @@ The **JHipster ASCII banner** stays enabled by default (Spring Boot default). Th
 | Mechanism | Default in chart | Purpose |
 |-----------|------------------|---------|
 | `JAVA_OPTS_APPEND` | UTF-8 system properties + `-XX:MaxRAMPercentage=72.0` | Cleaner multi-byte output and JVM heap sized to the container memory limit (UBI OpenJDK [run script](https://catalog.redhat.com/en/software/containers/ubi8/openjdk-21)). |
-| `resources` | requests `768Mi` / `100m`, limits `1536Mi` / `1500m` | Gives the JVM enough RAM to start without OOMKill on small namespaces; set `resources: {}` to unset. |
+| `resources` | requests `768Mi` / `100m`, limits `1536Mi` / `1` CPU | Sized for Developer Sandbox; set `resources: {}` to unset or raise for production |
 | `LOGGING_PATTERN_CONSOLE` | single-line pattern | Structured plain-text lines after the banner. |
 
 Optional Spring Boot tuning via `env` (only if you need it):
@@ -425,14 +422,16 @@ kuadrant:
 
 ### RBAC for In-Cluster Deploy
 
-When the JHipster Online UI deploys applications directly to the cluster (Fabric8), the pod's ServiceAccount needs `edit` permissions:
+By default **`openshift.grantEditRoleToServiceAccount: true`** and **`env.OPENSHIFT_DEPLOYMENT_ENABLED: "true"`** so the JHipster Online UI can deploy generated apps on Developer Sandbox. The chart creates a RoleBinding granting the built-in `edit` ClusterRole to the ServiceAccount used by the Deployment.
+
+To **disable** in-cluster deploy or use a narrower role elsewhere:
 
 ```yaml
 openshift:
-  grantEditRoleToServiceAccount: true
+  grantEditRoleToServiceAccount: false
+env:
+  OPENSHIFT_DEPLOYMENT_ENABLED: "false"
 ```
-
-This creates a RoleBinding granting the built-in `edit` ClusterRole to the ServiceAccount used by the Deployment.
 
 > **Least privilege:** Prefer a dedicated ServiceAccount and the minimal `Role` / `ClusterRole` from [`src/main/kubernetes/rbac.yaml`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/kubernetes/rbac.yaml) (`jhipster-online-deployer`) instead of namespace-wide `edit` when your cluster policy allows it.
 
@@ -453,7 +452,7 @@ Terminate TLS at the OpenShift Route / Ingress or an edge proxy. Do not expose p
 
 ### Workload identity for OpenShift deploy
 
-The chart can grant **`edit`** to the pod ServiceAccount for Fabric8 in-cluster deploys. That is broad. Where possible:
+The chart **defaults to granting `edit`** to the pod ServiceAccount for Sandbox try-out. That is broad. Where possible:
 
 1. Create a **dedicated** `ServiceAccount` (`serviceAccount.create: true` + `name`).
 2. Bind only the rules required from `rbac.yaml` instead of `edit`.
@@ -478,12 +477,13 @@ Treat `APPLICATION_JDL_AI_API_KEY` like any cloud API key: short-lived tokens wh
 | `route.enabled` | bool | `true` | Create OpenShift Route |
 | `ingress.enabled` | bool | `false` | Create Ingress |
 | `autoscaling.enabled` | bool | `false` | Enable HPA |
-| `openshift.grantEditRoleToServiceAccount` | bool | `false` | Bind `edit` role to pod SA |
+| `openshift.grantEditRoleToServiceAccount` | bool | `true` | Bind `edit` role to pod SA (Sandbox default; set `false` for least privilege) |
 | `kuadrant.enabled` | bool | `false` | Enable Kuadrant policies |
-| `resources` | object | requests/limits | CPU/memory for the **jhipster-online** container; set `{}` to unset |
+| `resources` | object | Sandbox-sized | CPU/memory for the **jhipster-online** container; set `{}` to unset |
 | `env.JAVA_APP_JAR` | string | `/deployments/jhonline.war` | WAR path inside the container (must match the image layout) |
 | `env.JAVA_OPTS_APPEND` | string | *(UTF-8 + MaxRAMPercentage)* | Extra JVM flags (UBI OpenJDK `run-java.sh`) |
 | `env.LOGGING_PATTERN_CONSOLE` | string | *(pattern)* | Log line format (`logging.pattern.console`) |
+| `env.OPENSHIFT_DEPLOYMENT_ENABLED` | string | `"true"` | Enable in-cluster deploy from UI (`openshift.deployment.enabled`) |
 | `env.APPLICATION_JDL_AI_ENABLED` | string | `"true"` | Enable JDL AI assistant |
 | `env.APPLICATION_JDL_AI_DEFAULT_MODEL_ID` | string | `granite-31-8b` | Default AI model |
 | `env.APPLICATION_JDL_AI_API_KEY` | string | `""` | Bearer token for model auth |

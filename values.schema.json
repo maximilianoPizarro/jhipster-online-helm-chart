@@ -205,7 +205,7 @@
             "properties": {
                 "grantEditRoleToServiceAccount": {
                     "type": "boolean",
-                    "description": "Create a RoleBinding granting 'edit' to the pod ServiceAccount"
+                    "description": "Bind namespace 'edit' to the pod ServiceAccount (default true for Developer Sandbox in-cluster deploy)"
                 }
             }
         },
@@ -279,6 +279,11 @@
                 "APPLICATION_JHIPSTER-CMD_CMD": {
                     "type": "string",
                     "description": "Generator CLI command: 'jhipster' or 'jhipster-quarkus'"
+                },
+                "OPENSHIFT_DEPLOYMENT_ENABLED": {
+                    "type": "string",
+                    "description": "Enable OpenShift in-cluster deploy from UI (openshift.deployment.enabled)",
+                    "enum": ["true", "false"]
                 },
                 "SPRING_DATASOURCE_URL": {
                     "type": "string"

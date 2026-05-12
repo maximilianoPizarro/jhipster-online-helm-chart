@@ -1,6 +1,14 @@
 # Default values for jhipster-online.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+#
+# -----------------------------------------------------------------------------
+# Profile: Red Hat OpenShift Developer Sandbox (first-run / try-out defaults).
+# Everything is in this file — no separate overlay YAML.
+# For other clusters: set openshift.grantEditRoleToServiceAccount to false,
+# env.OPENSHIFT_DEPLOYMENT_ENABLED to "false" if you forbid in-cluster deploy,
+# tune resources, and inject env.APPLICATION_JDL_AI_API_KEY via --set-string or a Secret.
+# -----------------------------------------------------------------------------
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
@@ -76,15 +84,15 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-# Default resources for the jhipster-online container (JVM + Spring Boot startup; tune for your cluster).
-# Set to {} to leave unset (e.g. Minikube with tight limits).
+# Default resources for the jhipster-online container (JVM + Spring Boot startup).
+# Tuned for Developer Sandbox quotas; raise limits for heavier prod workloads.
 resources:
   requests:
     memory: "768Mi"
     cpu: "100m"
   limits:
     memory: "1536Mi"
-    cpu: "1500m"
+    cpu: "1"
 
 # Probes target the Spring Boot app on port 8080 (NOT /jdl-studio/, which is served by the jdl-studio sidecar on 8081).
 # Startup gives the JVM time to boot before liveness failures (clearer logs, fewer CrashLoop restarts).
@@ -158,11 +166,11 @@ tolerations: []
 
 affinity: {}
 
-# OpenShift-only: in-cluster deploy from the JHipster Online UI (Fabric8 / Argo CD).
+# OpenShift-only: in-cluster deploy from the JHipster Online UI (Fabric8 / Helm / Argo CD).
 openshift:
   # When true, creates a RoleBinding so the pod's ServiceAccount gets namespace-scoped "edit"
-  # (fixes 403 on secrets/deployments for system:serviceaccount:<ns>:default on Developer Sandbox).
-  grantEditRoleToServiceAccount: false
+  # (required on Developer Sandbox for default SA; set false for least-privilege elsewhere).
+  grantEditRoleToServiceAccount: true
 
 route:
   enabled: true
@@ -193,6 +201,8 @@ env:
   APPLICATION_GITHUB_CLIENT-ID: CLIENT-ID
   APPLICATION_GITHUB_CLIENT-SECRET: CLIENT-SECRET
   APPLICATION_JHIPSTER-CMD_CMD: jhipster-quarkus
+  # In-cluster OpenShift deploy from the UI (openshift.deployment.enabled). Default on for Sandbox.
+  OPENSHIFT_DEPLOYMENT_ENABLED: "true"
   SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/jhipsteronline
   SPRING_DATASOURCE_USERNAME: jhipster
   SPRING_DATASOURCE_PASSWORD: jhipster
