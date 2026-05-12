@@ -289,6 +289,37 @@
                 "SPRING_DATASOURCE_PASSWORD": {
                     "type": "string"
                 },
+                "APPLICATION_HELM_TEMPLATE_PACKAGE_CHART_REPOSITORY_ON_GENERATE": {
+                    "type": "string",
+                    "description": "After rendering generated helm/, run helm package and helm repo index (chart-repository/ in Git)",
+                    "enum": ["true", "false"]
+                },
+                "APPLICATION_HELM_TEMPLATE_CHART_REPOSITORY_INDEX_BASE_URL": {
+                    "type": "string",
+                    "description": "Optional helm repo index --url base; blank uses GitHub Pages convention per upstream"
+                },
+                "APPLICATION_HELM_TEMPLATE_HELM_BINARY": {
+                    "type": "string",
+                    "description": "Helm CLI binary for chart packaging (application.helm-template.helm-binary)"
+                },
+                "OPENSHIFT_DEPLOYMENT_USE_HELM_CLI": {
+                    "type": "string",
+                    "description": "Use helm upgrade --install for in-cluster deploy when openshift.deployment.enabled",
+                    "enum": ["true", "false"]
+                },
+                "OPENSHIFT_DEPLOYMENT_HELM_BINARY": {
+                    "type": "string",
+                    "description": "Helm binary for OpenShift deploy (openshift.deployment.helm-binary)"
+                },
+                "OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS": {
+                    "type": "string",
+                    "description": "Timeout for helm install/upgrade (seconds)"
+                },
+                "OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8": {
+                    "type": "string",
+                    "description": "If Helm CLI deploy fails, fall back to Fabric8 apply",
+                    "enum": ["true", "false"]
+                },
                 "APPLICATION_JDL_AI_ENABLED": {
                     "type": "string",
                     "description": "Enable JDL AI assistant (true/false)",

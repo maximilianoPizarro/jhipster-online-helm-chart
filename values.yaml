@@ -200,6 +200,16 @@ env:
   # (classpath: helm-template/, repo-root-template/). Do not set raw GitHub URLs — external kubernetes/*.yaml
   # pipeline/devfile URLs were removed upstream (see redhat-developer-demos/jhipster-online).
   # Optional Backstage catalog entity file still in the repo: src/main/kubernetes/catalog-info.yaml
+  # Generated-repo Helm chart (application.helm-template.* — upstream application-prod.yml).
+  # Packaging runs helm package/repo index after render; requires helm CLI on the app image if enabled.
+  APPLICATION_HELM_TEMPLATE_PACKAGE_CHART_REPOSITORY_ON_GENERATE: "true"
+  APPLICATION_HELM_TEMPLATE_CHART_REPOSITORY_INDEX_BASE_URL: ""
+  APPLICATION_HELM_TEMPLATE_HELM_BINARY: "helm"
+  # In-cluster OpenShift deploy (openshift.deployment.*): Helm CLI vs Fabric8 client.
+  OPENSHIFT_DEPLOYMENT_USE_HELM_CLI: "true"
+  OPENSHIFT_DEPLOYMENT_HELM_BINARY: "helm"
+  OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS: "600"
+  OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8: "true"
   # JDL AI assistant — models served via KServe/vLLM in sandbox-shared-models namespace.
   # See https://github.com/redhat-developer-demos/jhipster-online README ("Optional JDL AI assistant").
   APPLICATION_JDL_AI_ENABLED: "true"
@@ -214,9 +224,9 @@ env:
   APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS: "15000"
   APPLICATION_JDL_AI_READ_TIMEOUT_MS: "120000"
   APPLICATION_JDL_AI_HELP_TEXT: "Drafts are suggestions — always review in JDL Studio before applying."
-  # Model 0 — IBM Granite 3.1 8B Instruct (FP8)
+  # Model 0 — IBM Granite 3.1 8B (FP8) (labels match upstream application-prod.yml)
   APPLICATION_JDL_AI_MODELS_0_ID: granite-31-8b
-  APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B Instruct (FP8)"
+  APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B (FP8)"
   APPLICATION_JDL_AI_MODELS_0_MODEL: isvc-granite-31-8b-fp8
   APPLICATION_JDL_AI_MODELS_0_API_URL: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   # Model 1 — NVIDIA Nemotron Nano 9B v2 (FP8)
@@ -226,7 +236,7 @@ env:
   APPLICATION_JDL_AI_MODELS_1_API_URL: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   # Model 2 — Qwen 3 8B (FP8)
   APPLICATION_JDL_AI_MODELS_2_ID: qwen3-8b
-  APPLICATION_JDL_AI_MODELS_2_LABEL: "Qwen 3 8B (FP8)"
+  APPLICATION_JDL_AI_MODELS_2_LABEL: "Qwen3 8B (FP8)"
   APPLICATION_JDL_AI_MODELS_2_MODEL: isvc-qwen3-8b-fp8
   APPLICATION_JDL_AI_MODELS_2_API_URL: "https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   # Bearer token for model auth — set via --set-string at install time: --set-string env.APPLICATION_JDL_AI_API_KEY="$(oc whoami -t)"

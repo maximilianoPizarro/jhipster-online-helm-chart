@@ -99,8 +99,8 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 
 | Tag | Dockerfile | Base | Generators |
 |-----|-----------|------|------------|
-| `2.40.1-quarkus` (default) | [`Dockerfile.quarkus`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.quarkus) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22** | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
-| `2.40.1-spring-boot` | [`Dockerfile.spring-boot`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.spring-boot) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22** | generator-jhipster 9.0.0 |
+| `2.40.1-quarkus` (default) | [`Dockerfile.quarkus`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.quarkus) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22.19** | generator-jhipster 9.0.0 + generator-jhipster-quarkus 3.6.0 |
+| `2.40.1-spring-boot` | [`Dockerfile.spring-boot`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.spring-boot) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22.19** | generator-jhipster 9.0.0 |
 
 **Registry**: `quay.io/maximilianopizarro/jhipster-online`
 
@@ -114,6 +114,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
+| **1.1.1** | 2.40.1 | Sync with upstream `application-prod.yml` (May 2026): `APPLICATION_HELM_TEMPLATE_*` (package chart repo on generate, optional index base URL, helm binary for packaging); `OPENSHIFT_DEPLOYMENT_*` Helm CLI install with timeout and Fabric8 fallback; JDL AI model labels aligned with upstream |
 | **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21** runtime per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always** on main container; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; default **resources** requests/limits; JDL AI (lexical + optional semantic RAG, timeouts); diagrams under `image/`; OpenShift generator uses **embedded** devfile/Tekton/Helm templates (no `OPENSHIFT_*` raw GitHub URL env vars; aligns with upstream removal of externalized `kubernetes/*.yaml`) |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
@@ -131,11 +132,11 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 
 # Install (latest)
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.0 -n <your-namespace>
+  --version 1.1.1 -n <your-namespace>
 
 # With AI models token
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.0 -n <your-namespace> \
+  --version 1.1.1 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -234,6 +235,22 @@ env:
 
 **Backstage / Developer Hub**: if you register the service in a Backstage catalog, you can still point at the upstream **catalog entity** file in the repo: [catalog-info.yaml](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/kubernetes/catalog-info.yaml) (`src/main/kubernetes/catalog-info.yaml`). That is optional catalog metadata only; it is separate from the generator’s embedded templates.
 
+### Packaged chart repository and OpenShift Helm deploy
+
+Upstream [application-prod.yml](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/resources/config/application-prod.yml) exposes Spring properties that map to these chart defaults in `values.yaml`:
+
+| Env variable | Default | Purpose |
+|--------------|---------|---------|
+| `APPLICATION_HELM_TEMPLATE_PACKAGE_CHART_REPOSITORY_ON_GENERATE` | `true` | After rendering the generated app’s `helm/` chart, run `helm package` and `helm repo index` so `chart-repository/` (`.tgz` + `index.yaml`) can be published (e.g. GitHub Pages). Requires the **helm** CLI on the JHipster Online image if you leave this enabled. |
+| `APPLICATION_HELM_TEMPLATE_CHART_REPOSITORY_INDEX_BASE_URL` | *(empty)* | Optional `helm repo index --url` base; when empty the app uses its GitHub Pages convention. |
+| `APPLICATION_HELM_TEMPLATE_HELM_BINARY` | `helm` | Binary used for packaging (separate from OpenShift deploy below). |
+| `OPENSHIFT_DEPLOYMENT_USE_HELM_CLI` | `true` | When `OPENSHIFT_DEPLOYMENT_ENABLED=true`, prefer `helm upgrade --install` for in-cluster installs. |
+| `OPENSHIFT_DEPLOYMENT_HELM_BINARY` | `helm` | Helm binary for deploy operations. |
+| `OPENSHIFT_DEPLOYMENT_HELM_TIMEOUT_SECONDS` | `600` | Timeout passed to Helm. |
+| `OPENSHIFT_DEPLOYMENT_HELM_FALLBACK_TO_FABRIC8` | `true` | If Helm CLI deploy fails, fall back to Fabric8 client apply. |
+
+Set `OPENSHIFT_DEPLOYMENT_USE_HELM_CLI` to `false` if your runtime image has no Helm CLI and you rely on Fabric8 only (matches upstream `application-dev.yml` default).
+
 ### JDL AI Assistant (OpenShift AI Models)
 
 The **Design Entities** page shows an **AI-assisted JDL draft** panel when `APPLICATION_JDL_AI_ENABLED=true` and at least one OpenAI-compatible completions URL is configured. The backend calls `POST .../v1/chat/completions` (vLLM, KServe, Ollama, OpenAI, etc.).
@@ -253,9 +270,9 @@ The **Design Entities** page shows an **AI-assisted JDL draft** panel when `APPL
 
 | Model | ID | vLLM Model ID | Context Length |
 |-------|-----|---------------|----------------|
-| IBM Granite 3.1 8B Instruct | `granite-31-8b` | `isvc-granite-31-8b-fp8` | 65536 |
+| IBM Granite 3.1 8B | `granite-31-8b` | `isvc-granite-31-8b-fp8` | 65536 |
 | NVIDIA Nemotron Nano 9B v2 | `nemotron-nano-9b-v2` | `isvc-nemotron-nano-9b-v2-fp8` | 65536 |
-| Qwen 3 8B | `qwen3-8b` | `isvc-qwen3-8b-fp8` | 40960 |
+| Qwen3 8B | `qwen3-8b` | `isvc-qwen3-8b-fp8` | 40960 |
 
 All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-models` namespace with FP8 quantization.
 
@@ -263,7 +280,7 @@ All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-mode
 
 ```bash
 helm upgrade --install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.0 -n <your-namespace> \
+  --version 1.1.1 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -306,7 +323,7 @@ env:
   APPLICATION_JDL_AI_CONNECT_TIMEOUT_MS: "15000"
   APPLICATION_JDL_AI_READ_TIMEOUT_MS: "120000"
   APPLICATION_JDL_AI_MODELS_0_ID: granite-31-8b
-  APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B Instruct (FP8)"
+  APPLICATION_JDL_AI_MODELS_0_LABEL: "IBM Granite 3.1 8B (FP8)"
   APPLICATION_JDL_AI_MODELS_0_MODEL: isvc-granite-31-8b-fp8
   APPLICATION_JDL_AI_MODELS_0_API_URL: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   APPLICATION_JDL_AI_MODELS_1_ID: nemotron-nano-9b-v2
@@ -314,7 +331,7 @@ env:
   APPLICATION_JDL_AI_MODELS_1_MODEL: isvc-nemotron-nano-9b-v2-fp8
   APPLICATION_JDL_AI_MODELS_1_API_URL: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   APPLICATION_JDL_AI_MODELS_2_ID: qwen3-8b
-  APPLICATION_JDL_AI_MODELS_2_LABEL: "Qwen 3 8B (FP8)"
+  APPLICATION_JDL_AI_MODELS_2_LABEL: "Qwen3 8B (FP8)"
   APPLICATION_JDL_AI_MODELS_2_MODEL: isvc-qwen3-8b-fp8
   APPLICATION_JDL_AI_MODELS_2_API_URL: "https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   APPLICATION_JDL_AI_API_KEY: ""   # set at install with --set-string or External Secrets
