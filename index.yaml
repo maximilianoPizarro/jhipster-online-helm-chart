@@ -23,7 +23,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.1
-    created: "2026-05-12T20:41:22.9987104-03:00"
+    created: "2026-05-13T14:12:05.8884573-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.40.1). Includes generator-jhipster 9.0.0, generator-jhipster-quarkus 3.6.0,
       a JDL Studio sidecar, MariaDB, an OpenShift Route, and optional in-cluster deploy
@@ -38,7 +38,7 @@ entries:
       Default values.yaml targets Red Hat Developer Sandbox (Route, edit RBAC, in-cluster
       deploy, shared-model JDL AI URLs). Helm deploy tuning uses OPENSHIFT_USE_HELM_CLI
       / OPENSHIFT_HELM_* env names per upstream application-prod.yml.'
-    digest: 2d01e4c1d446b0beaac493f7f752988457181bd2b4dbaa4586e8f2bab3e532a2
+    digest: 459e87c71af983b36732e58ffa0bdf5d7c9a977cf9917d4fab6c0be0acd6a62a
     home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
     icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
     keywords:
@@ -83,7 +83,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.0
-    created: "2026-05-12T20:41:22.9949863-03:00"
+    created: "2026-05-13T14:12:05.8815954-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
@@ -115,7 +115,7 @@ entries:
       charts.openshift.io/name: JHipster Online
     apiVersion: v2
     appVersion: 2.33.0
-    created: "2026-05-12T20:41:22.9891782-03:00"
+    created: "2026-05-13T14:12:05.8758847-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. - generator-jhipster-quarkus
       3.4.0 for generate Quarkus 3.11.1 projects. - JDL Studio for add JDL models
@@ -140,4 +140,4 @@ entries:
     urls:
     - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-12T20:41:22.9875753-03:00"
+generated: "2026-05-13T14:12:05.8747818-03:00"

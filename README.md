@@ -116,7 +116,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **defaults in `values.yaml` for Developer Sandbox** (Route, RBAC `edit`, `OPENSHIFT_DEPLOYMENT_ENABLED`, Sandbox `resources`, shared-model JDL AI); `APPLICATION_HELM_TEMPLATE_*`; Helm deploy env names **`OPENSHIFT_USE_HELM_CLI`**, **`OPENSHIFT_HELM_*`** (match upstream `application-prod.yml`); Editor AI reuses JDL AI config; no overlay file |
+| **1.1.0** | 2.40.1 | Quay `2.40.1-*` images (JDK **21**, **Node 22.19**, Maven 3.9.15 per upstream Dockerfiles); `JAVA_APP_JAR=/deployments/jhonline.war`; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **defaults in `values.yaml` for Developer Sandbox** (Route, RBAC `edit`, `OPENSHIFT_DEPLOYMENT_ENABLED`, Sandbox `resources`, shared-model JDL AI); `APPLICATION_HELM_TEMPLATE_*`; Helm deploy env names **`OPENSHIFT_USE_HELM_CLI`**, **`OPENSHIFT_HELM_*`** (match upstream `application-prod.yml`); Editor AI reuses JDL AI config; no overlay file; README clarifies **generated app** `helm/` RBAC vs Sandbox `edit` limits |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -172,7 +172,7 @@ Set GitHub OAuth with `--set-string` for `env.APPLICATION_GITHUB_CLIENT-ID` and 
 **Outside Sandbox** (tighter security or no in-cluster deploy): in the same `values.yaml` (or overrides via `--set`), set `openshift.grantEditRoleToServiceAccount: false`, `env.OPENSHIFT_DEPLOYMENT_ENABLED: "false"`, and adjust `resources` / model URLs as needed.
 
 - **JDL AI**: three models in `sandbox-shared-models` and `APPLICATION_JDL_AI_INSECURE_TLS=true` by default.
-- **Same image tag, new digest**: with `image.pullPolicy: Always` (default), run `oc rollout restart deployment/jhipster-online -n <ns>` after the registry is updated.
+- **Same image tag, new digest**: with `image.pullPolicy: Always` (default), run `oc login ...` if needed, then `oc rollout restart deployment/jhipster-online -n <ns>` after the registry image is updated so pods pull the new digest.
 
 ### Uninstall
 
@@ -427,6 +427,8 @@ kuadrant:
 
 By default **`openshift.grantEditRoleToServiceAccount: true`** and **`env.OPENSHIFT_DEPLOYMENT_ENABLED: "true"`** so the JHipster Online UI can deploy generated apps on Developer Sandbox. The chart creates a RoleBinding granting the built-in `edit` ClusterRole to the ServiceAccount used by the Deployment.
 
+**Generated repositories (Helm deploy from the UI):** On Red Hat Developer Sandbox, the same ServiceAccount can use `edit` for workloads (Deployments, Services, Routes, Secrets, PVCs, Tekton, etc.) but **cannot** create or read extra `Role` / `RoleBinding` resources in `rbac.authorization.k8s.io`. If the generated app chart tried to install those, `helm upgrade --install` would fail with 403 before other resources apply. JHipster Online **2.40.1** upstream defaults generated `helm/values.yaml` to **`rbac.create: false`**, so the optional `rbac-deployer.yaml` templates are skipped and in-cluster Helm deploy matches Sandbox permissions. On clusters where your deployer may create namespace-scoped Roles, install or upgrade with `--set rbac.create=true`.
+
 To **disable** in-cluster deploy or use a narrower role elsewhere:
 
 ```yaml
@@ -532,8 +534,12 @@ python scripts/render_diagrams.py
 # Package chart
 helm package -u . -d charts
 
-# Regenerate index (merge keeps older chart entries)
-helm repo index . --url https://maximilianopizarro.github.io/jhipster-online-helm-chart/ --merge index.yaml
+# Regenerate index from charts/*.tgz (merge keeps older chart entries), then keep repo root index.yaml
+helm repo index charts \
+  --url https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts \
+  --merge index.yaml
+cp charts/index.yaml index.yaml
+rm charts/index.yaml
 ```
 
 ---

@@ -38,7 +38,10 @@ spec:
         - name: nginx-conf-jh-volume
           configMap:
             name: nginx-conf
-            defaultMode: 420      
+            defaultMode: 420
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -98,10 +101,6 @@ spec:
             - name: nginx-conf-jh-volume
               mountPath: /opt/app-root/etc/nginx.default.d/default.conf
               subPath: default.conf  
-      {{- with .Values.volumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
