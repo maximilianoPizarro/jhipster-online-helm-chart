@@ -4,8 +4,10 @@ metadata:
   name: {{ include "jhipster-online.fullname" . }}
   labels:
     {{- include "jhipster-online.labels" . | nindent 4 }}
+  {{- if .Values.mariadb.enabled }}
   annotations:
-    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"mariadb"}]'        
+    app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"mariadb"}]'
+  {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

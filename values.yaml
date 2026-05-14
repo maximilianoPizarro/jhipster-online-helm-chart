@@ -295,6 +295,14 @@ mcpWorker:
     repository: quay.io/maximilianopizarro/jhipster-online-mcp-worker
     tag: "2.41.1-mcp-worker"
 
+# -----------------------------------------------------------------------------
+# In-cluster MariaDB (OpenShift template: Secret, Deployment, Service, PVC).
+# Default on for Developer Sandbox. Set enabled: false to use an external database;
+# you must override env (e.g. SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD).
+# -----------------------------------------------------------------------------
+mariadb:
+  enabled: true
+
 #global:
 #  security:
 #    allowInsecureImages: true  

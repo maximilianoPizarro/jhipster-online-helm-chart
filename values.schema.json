@@ -6,6 +6,16 @@
             "type": "integer",
             "minimum": 1
         },
+        "mariadb": {
+            "type": "object",
+            "description": "In-cluster MariaDB (Secret, Deployment, Service, PVC). Disable to use an external database and override SPRING_DATASOURCE_* in env",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Deploy bundled MariaDB workload (defaults to true)"
+                }
+            }
+        },
         "image": {
             "type": "object",
             "properties": {
