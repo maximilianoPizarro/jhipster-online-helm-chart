@@ -1,0 +1,20 @@
+{{- if .Values.mcpWorker.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jhipster-online.fullname" . }}-mcp-worker
+  labels:
+    {{- include "jhipster-online.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mcp-worker
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.mcpWorker.port }}
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "jhipster-online.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: mcp-worker
+{{- end }}

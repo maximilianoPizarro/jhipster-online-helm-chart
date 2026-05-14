@@ -43,3 +43,11 @@
 {{- else }}
    Disabled (pyhipsterWorker.enabled=false).
 {{- end }}
+
+6. MCP worker (Node sidecar HTTP API):
+{{- if .Values.mcpWorker.enabled }}
+   Enabled — Deployment/Service {{ include "jhipster-online.fullname" . }}-mcp-worker (port {{ .Values.mcpWorker.port }}). Main app calls the sidecar via APPLICATION_MCPWORKER_* (POST /generate, /preview).
+   Developer Sandbox: adds one extra pod when enabled.
+{{- else }}
+   Disabled (mcpWorker.enabled=false).
+{{- end }}

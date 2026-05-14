@@ -20,7 +20,7 @@
                 },
                 "tag": {
                     "type": "string",
-                    "description": "Image tag (2.41.0-quarkus or 2.41.0-spring-boot)"
+                    "description": "Image tag (2.41.1-quarkus or 2.41.1-spring-boot)"
                 }
             }
         },
@@ -471,6 +471,39 @@
                 "timeoutSeconds": {
                     "type": "integer",
                     "description": "Client timeout for delegating generation to the worker"
+                },
+                "replicas": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "mcpWorker": {
+            "type": "object",
+            "description": "Optional Node MCP HTTP worker (port 8083); main app uses APPLICATION_MCPWORKER_* when enabled (default false)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Deploy mcp-worker Deployment + Service and wire main app via APPLICATION_MCPWORKER_*"
+                },
+                "port": {
+                    "type": "integer",
+                    "description": "HTTP port for the MCP worker container and Service (default 8083)"
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "description": "Client timeout for calls from the main app to the MCP worker"
                 },
                 "replicas": {
                     "type": "integer",

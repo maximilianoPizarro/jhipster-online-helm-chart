@@ -75,6 +75,14 @@ spec:
             - name: APPLICATION_PYHIPSTERWORKER_TIMEOUT_SECONDS
               value: "{{ .Values.pyhipsterWorker.timeoutSeconds }}"
           {{- end }}
+          {{- if .Values.mcpWorker.enabled }}
+            - name: APPLICATION_MCPWORKER_ENABLED
+              value: "true"
+            - name: APPLICATION_MCPWORKER_BASE_URL
+              value: {{ printf "http://%s-mcp-worker:%v" (include "jhipster-online.fullname" .) (.Values.mcpWorker.port | int) | quote }}
+            - name: APPLICATION_MCPWORKER_TIMEOUT_SECONDS
+              value: "{{ .Values.mcpWorker.timeoutSeconds }}"
+          {{- end }}
           ports:
             - name: jhipster-online
               containerPort: {{ .Values.service.port }}

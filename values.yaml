@@ -19,8 +19,8 @@ image:
   # Pull policy for the jhipster-online container only (see templates/deployment.yaml).
   # Always: each new pod pulls the image again — use when the tag is reused or you want the latest digest from the registry (same as oc patch … imagePullPolicy: Always).
   pullPolicy: Always
-  # Overrides the image tag (use 2.41.0-quarkus or 2.41.0-spring-boot for runtime images).
-  tag: "2.41.0-quarkus"
+  # Overrides the image tag (use 2.41.1-quarkus or 2.41.1-spring-boot for runtime images).
+  tag: "2.41.1-quarkus"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -265,7 +265,7 @@ jhipster8Worker:
   replicas: 1
   image:
     repository: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker
-    tag: "2.41.0-jhipster8-worker"
+    tag: "2.41.1-jhipster8-worker"
 
 # -----------------------------------------------------------------------------
 # PyHipster HTTP worker: Python/Flask stack via separate Deployment + Service.
@@ -279,7 +279,21 @@ pyhipsterWorker:
   replicas: 1
   image:
     repository: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker
-    tag: "2.41.0-pyhipster-worker"
+    tag: "2.41.1-pyhipster-worker"
+
+# -----------------------------------------------------------------------------
+# MCP HTTP worker (Node): optional sidecar workload on port 8083 (POST /generate, /preview).
+# When enabled, deploys Deployment + Service and sets APPLICATION_MCPWORKER_* on the main app.
+# Default off — enable when the app image supports MCP delegation and the worker image is published.
+# -----------------------------------------------------------------------------
+mcpWorker:
+  enabled: false
+  port: 8083
+  timeoutSeconds: 120
+  replicas: 1
+  image:
+    repository: quay.io/maximilianopizarro/jhipster-online-mcp-worker
+    tag: "2.41.1-mcp-worker"
 
 #global:
 #  security:
