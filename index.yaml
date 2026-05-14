@@ -27,19 +27,19 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.1
-    created: "2026-05-13T22:28:58.1617796-03:00"
+    created: "2026-05-13T22:32:11.3965106-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.40.1). Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with
       optional JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET,
       Node/NestJS, Azure Container Apps). When jhipster8Worker.enabled, a second Deployment
       + ClusterIP Service exposes generator-jhipster@8.11; the main app delegates
-      via APPLICATION_JHIPSTER8WORKER_* env vars. Optional pyhipsterWorker (off by
-      default) adds a PyHipster HTTP worker on port 8082 with APPLICATION_PYHIPSTERWORKER_*
-      when enabled. Includes JDL Studio sidecar, MariaDB, OpenShift Route, optional
-      in-cluster deploy RBAC, and JDL AI. Runtime images on Quay (2.40.1-quarkus /
-      2.40.1-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15, WAR at /deployments/jhonline.war.
+      via APPLICATION_JHIPSTER8WORKER_* env vars. Optional pyhipsterWorker (on by
+      default) adds a PyHipster HTTP worker on port 8082 with APPLICATION_PYHIPSTERWORKER_*;
+      set enabled false to disable. Includes JDL Studio sidecar, MariaDB, OpenShift
+      Route, optional in-cluster deploy RBAC, and JDL AI. Runtime images on Quay (2.40.1-quarkus
+      / 2.40.1-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15, WAR at /deployments/jhonline.war.
       Default values target Red Hat Developer Sandbox.'
-    digest: 8f7f47cdfee76abab6cc1ff61f4242e6047c61d5cb060ad1d2163c5a8f263ab0
+    digest: c9bd2d16bd434e6d5b4ab401edea0dae57edeb03756f2b85f2b3017a0ffca090
     home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
     icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
     keywords:
@@ -87,7 +87,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.0
-    created: "2026-05-13T22:28:58.1582727-03:00"
+    created: "2026-05-13T22:32:11.3919941-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
@@ -119,7 +119,7 @@ entries:
       charts.openshift.io/name: JHipster Online
     apiVersion: v2
     appVersion: 2.33.0
-    created: "2026-05-13T22:28:58.1532704-03:00"
+    created: "2026-05-13T22:32:11.387994-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. - generator-jhipster-quarkus
       3.4.0 for generate Quarkus 3.11.1 projects. - JDL Studio for add JDL models
@@ -144,4 +144,4 @@ entries:
     urls:
     - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-13T22:28:58.1517687-03:00"
+generated: "2026-05-13T22:32:11.3859902-03:00"

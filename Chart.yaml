@@ -6,8 +6,8 @@ description: >-
   JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET, Node/NestJS,
   Azure Container Apps). When jhipster8Worker.enabled, a second Deployment + ClusterIP
   Service exposes generator-jhipster@8.11; the main app delegates via
-  APPLICATION_JHIPSTER8WORKER_* env vars. Optional pyhipsterWorker (off by default)
-  adds a PyHipster HTTP worker on port 8082 with APPLICATION_PYHIPSTERWORKER_* when enabled.
+  APPLICATION_JHIPSTER8WORKER_* env vars. Optional pyhipsterWorker (on by default)
+  adds a PyHipster HTTP worker on port 8082 with APPLICATION_PYHIPSTERWORKER_*; set enabled false to disable.
   Includes JDL Studio sidecar, MariaDB,
   OpenShift Route, optional in-cluster deploy RBAC, and JDL AI. Runtime images on
   Quay (2.40.1-quarkus / 2.40.1-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15,

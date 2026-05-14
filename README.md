@@ -50,7 +50,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **generator-jhipster 9.0.0** — generates Spring Boot 3.4+ / Java 21 projects
 - **generator-jhipster-quarkus 4.0.0** — generates Quarkus projects (JH9-compatible)
 - **JHipster 8 HTTP worker** (optional, default **on**) — separate Deployment with generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; main app delegates those stacks via `APPLICATION_JHIPSTER8WORKER_*` (see [JHipster 8 Worker](#jhipster-8-worker))
-- **PyHipster HTTP worker** (optional, default **off**) — separate Deployment for Python/PyHipster generation; enable with `pyhipsterWorker.enabled: true` and wire via `APPLICATION_PYHIPSTERWORKER_*` (see [PyHipster Worker](#pyhipster-worker))
+- **PyHipster HTTP worker** (optional, default **on**) — separate Deployment for Python/PyHipster generation; wired via `APPLICATION_PYHIPSTERWORKER_*`; set `pyhipsterWorker.enabled: false` to disable (see [PyHipster Worker](#pyhipster-worker))
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **Editor AI** — in-app assist for **Helm YAML** and **JDL** (complete, explain, fix, generate-from-prompt) via `/api/editor-ai/*`; uses the **same** `APPLICATION_JDL_AI_*` settings and API key as JDL AI ([upstream](https://github.com/redhat-developer-demos/jhipster-online))
@@ -133,7 +133,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** + optional **PyHipster worker** (`pyhipsterWorker`, default off); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** + `MaxRAMPercentage` 65; **Developer Sandbox defaults** (Route, RBAC `edit`, JDL AI); Helm deploy `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI |
+| **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** + **PyHipster worker** (`pyhipsterWorker`, default **on**); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** + `MaxRAMPercentage` 65; **Developer Sandbox defaults** (Route, RBAC `edit`, JDL AI); Helm deploy `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -277,33 +277,29 @@ The worker image uses `imagePullPolicy: IfNotPresent`. Tune `jhipster8Worker.rep
 
 ### PyHipster Worker
 
-Optional **PyHipster** path: a dedicated HTTP worker pod (default port **8082**, probes on `/health`) with image `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.40.1-pyhipster-worker`. With `pyhipsterWorker.enabled: true` in [values.yaml](values.yaml), the chart deploys **Deployment** and **ClusterIP Service** `<Helm release name>-pyhipster-worker` and the main pod receives:
+**PyHipster** runs in a dedicated HTTP worker pod (default port **8082**, probes on `/health`) with image `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.40.1-pyhipster-worker`. By default **`pyhipsterWorker.enabled: true`** in [values.yaml](values.yaml); the chart deploys **Deployment** and **ClusterIP Service** `<Helm release name>-pyhipster-worker` and the main pod receives:
 
 - `APPLICATION_PYHIPSTERWORKER_ENABLED=true`
 - `APPLICATION_PYHIPSTERWORKER_BASE_URL=http://<fullname>-pyhipster-worker:<port>`
 - `APPLICATION_PYHIPSTERWORKER_TIMEOUT_SECONDS` from `pyhipsterWorker.timeoutSeconds`
 
-Requires an application build that implements the PyHipster worker client and a published worker image. Default is **`pyhipsterWorker.enabled: false`**.
+Requires an application build that implements the PyHipster worker client and a published worker image. To **disable** (save Sandbox pods or if the image is not ready):
 
 ```yaml
 pyhipsterWorker:
-  enabled: true
-  port: 8082
-  timeoutSeconds: 600
-  replicas: 1
-  image:
-    repository: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker
-    tag: "2.40.1-pyhipster-worker"
+  enabled: false
 ```
+
+Default port, timeout, replicas, and image match [values.yaml](values.yaml).
 
 #### Developer Sandbox pod count (workers)
 
 | Configuration | Approx. pods (incl. MariaDB) |
 |----------------|-----------------------------|
-| JH8 on, PyHipster off (default) | 3 |
-| JH8 off, PyHipster off | 2 |
-| JH8 on, PyHipster on | 4 |
+| JH8 on, PyHipster on (**defaults**) | 4 |
+| JH8 on, PyHipster off | 3 |
 | JH8 off, PyHipster on | 3 |
+| JH8 off, PyHipster off | 2 |
 
 ### GitHub OAuth
 

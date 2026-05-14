@@ -458,7 +458,7 @@
         },
         "pyhipsterWorker": {
             "type": "object",
-            "description": "Optional PyHipster HTTP worker (Python/Flask); main app uses APPLICATION_PYHIPSTERWORKER_* when enabled",
+            "description": "PyHipster HTTP worker (Python/Flask); main app uses APPLICATION_PYHIPSTERWORKER_* when enabled (defaults to true in values.yaml)",
             "properties": {
                 "enabled": {
                     "type": "boolean",
