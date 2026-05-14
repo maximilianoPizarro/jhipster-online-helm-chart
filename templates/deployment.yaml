@@ -67,6 +67,14 @@ spec:
             - name: APPLICATION_JHIPSTER8WORKER_TIMEOUT_SECONDS
               value: "{{ .Values.jhipster8Worker.timeoutSeconds }}"
           {{- end }}
+          {{- if .Values.pyhipsterWorker.enabled }}
+            - name: APPLICATION_PYHIPSTERWORKER_ENABLED
+              value: "true"
+            - name: APPLICATION_PYHIPSTERWORKER_BASE_URL
+              value: {{ printf "http://%s-pyhipster-worker:%v" (include "jhipster-online.fullname" .) (.Values.pyhipsterWorker.port | int) | quote }}
+            - name: APPLICATION_PYHIPSTERWORKER_TIMEOUT_SECONDS
+              value: "{{ .Values.pyhipsterWorker.timeoutSeconds }}"
+          {{- end }}
           ports:
             - name: jhipster-online
               containerPort: {{ .Values.service.port }}

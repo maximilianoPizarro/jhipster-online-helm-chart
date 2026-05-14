@@ -267,6 +267,20 @@ jhipster8Worker:
     repository: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker
     tag: "2.40.1-jhipster8-worker"
 
+# -----------------------------------------------------------------------------
+# PyHipster HTTP worker (optional): Python/Flask stack via separate Deployment + Service.
+# When enabled, main app receives APPLICATION_PYHIPSTERWORKER_* and delegates to this pod (port 8082).
+# Default off — enable when the app image includes PyHipster worker client support and the worker image is published.
+# -----------------------------------------------------------------------------
+pyhipsterWorker:
+  enabled: false
+  port: 8082
+  timeoutSeconds: 600
+  replicas: 1
+  image:
+    repository: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker
+    tag: "2.40.1-pyhipster-worker"
+
 #global:
 #  security:
 #    allowInsecureImages: true  

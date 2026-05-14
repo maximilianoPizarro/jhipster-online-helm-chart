@@ -35,3 +35,11 @@
 {{- else }}
    Disabled (jhipster8Worker.enabled=false). Only the main pod runs generation.
 {{- end }}
+
+5. PyHipster worker:
+{{- if .Values.pyhipsterWorker.enabled }}
+   Enabled — Deployment/Service {{ include "jhipster-online.fullname" . }}-pyhipster-worker (port {{ .Values.pyhipsterWorker.port }}). Main app delegates Python/PyHipster via APPLICATION_PYHIPSTERWORKER_*.
+   Developer Sandbox: adds one extra pod (cumulative with the JHipster 8 worker if both are enabled).
+{{- else }}
+   Disabled (pyhipsterWorker.enabled=false).
+{{- end }}

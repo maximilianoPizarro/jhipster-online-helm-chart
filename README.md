@@ -28,6 +28,7 @@
   - [Startup console, JVM, and resources](#startup-console-jvm-and-resources)
   - [Generator Mode (Quarkus / Spring Boot)](#generator-mode-quarkus--spring-boot)
   - [JHipster 8 Worker](#jhipster-8-worker)
+  - [PyHipster Worker](#pyhipster-worker)
   - [GitHub OAuth](#github-oauth)
   - [Developer Hub and Dev Spaces](#developer-hub-and-dev-spaces)
   - [JDL AI Assistant (OpenShift AI Models)](#jdl-ai-assistant-openshift-ai-models)
@@ -49,6 +50,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **generator-jhipster 9.0.0** — generates Spring Boot 3.4+ / Java 21 projects
 - **generator-jhipster-quarkus 4.0.0** — generates Quarkus projects (JH9-compatible)
 - **JHipster 8 HTTP worker** (optional, default **on**) — separate Deployment with generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; main app delegates those stacks via `APPLICATION_JHIPSTER8WORKER_*` (see [JHipster 8 Worker](#jhipster-8-worker))
+- **PyHipster HTTP worker** (optional, default **off**) — separate Deployment for Python/PyHipster generation; enable with `pyhipsterWorker.enabled: true` and wire via `APPLICATION_PYHIPSTERWORKER_*` (see [PyHipster Worker](#pyhipster-worker))
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **Editor AI** — in-app assist for **Helm YAML** and **JDL** (complete, explain, fix, generate-from-prompt) via `/api/editor-ai/*`; uses the **same** `APPLICATION_JDL_AI_*` settings and API key as JDL AI ([upstream](https://github.com/redhat-developer-demos/jhipster-online))
@@ -76,6 +78,7 @@ Source application: [redhat-developer-demos/jhipster-online](https://github.com/
 | jhipster-online | `quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus` | 8080 | Spring Boot app — generation, Git push, Fabric8 deploy, JDL AI |
 | jdl-studio | `quay.io/maximilianopizarro/jdl-studio` | 8081 | nginx sidecar serving JDL Studio UI (same pod as main app) |
 | jhipster8-worker | `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.40.1-jhipster8-worker` | 8081 | HTTP worker — JH8 CLI for .NET, Node/NestJS, Azure ACA (`jhipster8Worker.enabled`) |
+| pyhipster-worker | `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.40.1-pyhipster-worker` | 8082 | HTTP worker — PyHipster / Python stack (`pyhipsterWorker.enabled`) |
 | mariadb | `registry.redhat.io/rhel8/mariadb-103` | 3306 | Persistent database |
 | AI models | KServe InferenceServices in `sandbox-shared-models` | 8443 | vLLM OpenAI-compatible endpoints |
 
@@ -87,9 +90,11 @@ The chart creates the following OpenShift resources:
 |----------|------|-----------|
 | Deployment | `jhipster-online` (2 containers) | Always |
 | Deployment | `jhipster-online-jhipster8-worker` | `jhipster8Worker.enabled=true` |
+| Deployment | `jhipster-online-pyhipster-worker` | `pyhipsterWorker.enabled=true` |
 | Deployment | `mariadb` | Always |
 | Service | `jhipster-online` (8080) | Always |
 | Service | `jhipster-online-jhipster8-worker` | `jhipster8Worker.enabled=true` |
+| Service | `jhipster-online-pyhipster-worker` | `pyhipsterWorker.enabled=true` |
 | ConfigMap | `nginx-conf` | Always |
 | Route | `jhipster-online` (TLS edge) | `route.enabled=true` |
 | ServiceAccount | per fullname | `serviceAccount.create=true` |
@@ -114,8 +119,9 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 | Image | Tag | Purpose |
 |-------|-----|---------|
 | `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker` | `2.40.1-jhipster8-worker` | generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; invoked by main app when `jhipster8Worker.enabled=true` |
+| `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker` | `2.40.1-pyhipster-worker` | PyHipster / Python Flask worker HTTP API; invoked when `pyhipsterWorker.enabled=true` |
 
-**Registry**: `quay.io/maximilianopizarro/jhipster-online` (main app) and `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker` (optional worker).
+**Registry**: `quay.io/maximilianopizarro/jhipster-online` (main app), `jhipster-online-jhipster8-worker`, and `jhipster-online-pyhipster-worker` as needed.
 
 Set `image.tag` in `values.yaml` and match `env.JAVA_APP_JAR` to the WAR path baked into that image (default: `/deployments/jhonline.war`).
 
@@ -127,7 +133,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** (optional `jhipster8Worker` Deployment + Service; delegates .NET / Node / Azure ACA to generator-jhipster 8.11); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** memory + `MaxRAMPercentage` 65 (OOM-safe Spring Boot gen); **Developer Sandbox defaults** (Route, RBAC `edit`, in-cluster deploy, JDL AI); Helm deploy via `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI reuses JDL AI config |
+| **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** + optional **PyHipster worker** (`pyhipsterWorker`, default off); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** + `MaxRAMPercentage` 65; **Developer Sandbox defaults** (Route, RBAC `edit`, JDL AI); Helm deploy `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -265,14 +271,39 @@ jhipster8Worker:
   enabled: false
 ```
 
-#### Developer Sandbox pod count
+Combined pod counts with the PyHipster worker are in the table under [PyHipster Worker](#pyhipster-worker).
+
+The worker image uses `imagePullPolicy: IfNotPresent`. Tune `jhipster8Worker.replicas` and worker image resources in your fork if you need HA or heavier generations.
+
+### PyHipster Worker
+
+Optional **PyHipster** path: a dedicated HTTP worker pod (default port **8082**, probes on `/health`) with image `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.40.1-pyhipster-worker`. With `pyhipsterWorker.enabled: true` in [values.yaml](values.yaml), the chart deploys **Deployment** and **ClusterIP Service** `<Helm release name>-pyhipster-worker` and the main pod receives:
+
+- `APPLICATION_PYHIPSTERWORKER_ENABLED=true`
+- `APPLICATION_PYHIPSTERWORKER_BASE_URL=http://<fullname>-pyhipster-worker:<port>`
+- `APPLICATION_PYHIPSTERWORKER_TIMEOUT_SECONDS` from `pyhipsterWorker.timeoutSeconds`
+
+Requires an application build that implements the PyHipster worker client and a published worker image. Default is **`pyhipsterWorker.enabled: false`**.
+
+```yaml
+pyhipsterWorker:
+  enabled: true
+  port: 8082
+  timeoutSeconds: 600
+  replicas: 1
+  image:
+    repository: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker
+    tag: "2.40.1-pyhipster-worker"
+```
+
+#### Developer Sandbox pod count (workers)
 
 | Configuration | Approx. pods (incl. MariaDB) |
 |----------------|-----------------------------|
-| `jhipster8Worker.enabled=true` (default) | 3 |
-| `jhipster8Worker.enabled=false` | 2 |
-
-The worker image uses `imagePullPolicy: IfNotPresent`. Tune `jhipster8Worker.replicas` and worker image resources in your fork if you need HA or heavier generations.
+| JH8 on, PyHipster off (default) | 3 |
+| JH8 off, PyHipster off | 2 |
+| JH8 on, PyHipster on | 4 |
+| JH8 off, PyHipster on | 3 |
 
 ### GitHub OAuth
 

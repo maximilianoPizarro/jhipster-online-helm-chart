@@ -455,6 +455,39 @@
                     }
                 }
             }
+        },
+        "pyhipsterWorker": {
+            "type": "object",
+            "description": "Optional PyHipster HTTP worker (Python/Flask); main app uses APPLICATION_PYHIPSTERWORKER_* when enabled",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Deploy pyhipster-worker Deployment + Service and wire main app via APPLICATION_PYHIPSTERWORKER_*"
+                },
+                "port": {
+                    "type": "integer",
+                    "description": "HTTP port for the worker container and Service (default 8082)"
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "description": "Client timeout for delegating generation to the worker"
+                },
+                "replicas": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     }
 }
