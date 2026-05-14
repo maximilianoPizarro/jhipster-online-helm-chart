@@ -20,7 +20,7 @@
                 },
                 "tag": {
                     "type": "string",
-                    "description": "Image tag (2.40.1-quarkus or 2.40.1-spring-boot)"
+                    "description": "Image tag (2.41.0-quarkus or 2.41.0-spring-boot)"
                 }
             }
         },

@@ -1,7 +1,7 @@
 apiVersion: v2
 name: jhipster-online
 description: >-
-  Helm chart for JHipster Online on Red Hat OpenShift (application 2.40.1).
+  Helm chart for JHipster Online on Red Hat OpenShift (application 2.41.0).
   Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with optional
   JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET, Node/NestJS,
   Azure Container Apps). When jhipster8Worker.enabled, a second Deployment + ClusterIP
@@ -10,7 +10,7 @@ description: >-
   adds a PyHipster HTTP worker on port 8082 with APPLICATION_PYHIPSTERWORKER_*; set enabled false to disable.
   Includes JDL Studio sidecar, MariaDB,
   OpenShift Route, optional in-cluster deploy RBAC, and JDL AI. Runtime images on
-  Quay (2.40.1-quarkus / 2.40.1-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15,
+  Quay (2.41.0-quarkus / 2.41.0-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15,
   WAR at /deployments/jhonline.war. Default values target Red Hat Developer Sandbox.
 
 # OpenShift 4.12+ ships Kubernetes 1.25; Developer Sandbox and current OCP are well above this floor.
@@ -44,13 +44,13 @@ keywords:
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.1.0
+version: 1.1.1
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2.40.1"
+appVersion: "2.41.0"
 
 home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
 
@@ -74,13 +74,13 @@ annotations:
   artifacthub.io/containsSecurityUpdates: "true"
   artifacthub.io/images: |
     - name: jhipster-online-quarkus
-      image: quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus
+      image: quay.io/maximilianopizarro/jhipster-online:2.41.0-quarkus
     - name: jhipster-online-spring-boot
-      image: quay.io/maximilianopizarro/jhipster-online:2.40.1-spring-boot
+      image: quay.io/maximilianopizarro/jhipster-online:2.41.0-spring-boot
     - name: jhipster8-worker
-      image: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.40.1-jhipster8-worker
+      image: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.41.0-jhipster8-worker
     - name: pyhipster-worker
-      image: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.40.1-pyhipster-worker
+      image: quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.41.0-pyhipster-worker
     - name: jdl-studio
       image: quay.io/maximilianopizarro/jdl-studio:latest
   artifacthub.io/links: |
