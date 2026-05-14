@@ -54,7 +54,7 @@ This Helm chart deploys **JHipster Online 2.41.1** on Red Hat OpenShift. The sta
 - **generator-jhipster-micronaut 4.0.0** — Micronaut blueprint in the main runtime image (JH9-compatible)
 - **JHipster 8 HTTP worker** (optional, default **on**) — separate Deployment with generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; main app delegates those stacks via `APPLICATION_JHIPSTER8WORKER_*` (see [JHipster 8 Worker](#jhipster-8-worker))
 - **PyHipster HTTP worker** (optional, default **on**) — separate Deployment for Python/PyHipster generation; wired via `APPLICATION_PYHIPSTERWORKER_*`; set `pyhipsterWorker.enabled: false` to disable (see [PyHipster Worker](#pyhipster-worker))
-- **Optional MCP HTTP worker** (default **off**) — Node sidecar on port **8083** for MCP-style generation (`POST /generate`, `/preview`); when `mcpWorker.enabled`, the chart deploys a separate Deployment + Service and sets `APPLICATION_MCPWORKER_*` on the main app (see [MCP Worker](#mcp-worker))
+- **MCP HTTP worker** (optional, default **on**) — Node sidecar on port **8083** for MCP-style generation (`POST /generate`, `/preview`); the chart deploys a separate Deployment + Service and sets `APPLICATION_MCPWORKER_*` on the main app; set `mcpWorker.enabled: false` to disable (see [MCP Worker](#mcp-worker))
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **Editor AI** — in-app assist for **Helm YAML** and **JDL** (complete, explain, fix, generate-from-prompt) via `/api/editor-ai/*`; uses the **same** `APPLICATION_JDL_AI_*` settings and API key as JDL AI ([upstream](https://github.com/redhat-developer-demos/jhipster-online))
@@ -63,7 +63,7 @@ This Helm chart deploys **JHipster Online 2.41.1** on Red Hat OpenShift. The sta
 - **Developer Sandbox defaults** — a single [values.yaml](values.yaml): Route on, RBAC `edit` for the pod ServiceAccount, in-cluster deploy enabled, JDL AI URLs for `sandbox-shared-models`; set `env.APPLICATION_JDL_AI_API_KEY` at install (e.g. `oc whoami -t`). For other clusters, turn those off in the same file (see [RBAC for In-Cluster Deploy](#rbac-for-in-cluster-deploy)).
 - **Runtime image (upstream)** — [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online) `Dockerfile.quarkus` / `Dockerfile.spring-boot`: **UBI8 OpenJDK 21**, **Node 22.19**, **Maven 3.9.15**, WAR at `/deployments/jhonline.war`.
 - **v2.41.0 highlights** — local full stack via `podman-compose.yml` + `Dockerfile.local`; Rust generator improvements (SQLite, `StackProfileResolver` for `backendFramework: rust`, H2→SQLite coercion in `.yo-rc.json` shim). See upstream [README — New Features in v2.41.0](https://github.com/redhat-developer-demos/jhipster-online#new-features-in-v2410).
-- **Chart 1.1.2 / app 2.41.1** — image tag bump; optional **`mcpWorker`** (Node HTTP worker on **8083**, default `enabled: false`) with `APPLICATION_MCPWORKER_*` wired like the JH8 / PyHipster workers.
+- **Chart 1.1.3 / app 2.41.1** — **`mcpWorker` enabled by default** (Node HTTP worker on **8083**); chart **1.1.2** introduced MCP with `enabled: false` by default.
 
 Source application: [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)
 
@@ -85,7 +85,7 @@ Source application: [redhat-developer-demos/jhipster-online](https://github.com/
 | jdl-studio | `quay.io/maximilianopizarro/jdl-studio` | 8081 | nginx sidecar serving JDL Studio UI (same pod as main app) |
 | jhipster8-worker | `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.41.1-jhipster8-worker` | 8081 | HTTP worker — JH8 CLI for .NET, Node/NestJS, Azure ACA (`jhipster8Worker.enabled`) |
 | pyhipster-worker | `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker:2.41.1-pyhipster-worker` | 8082 | HTTP worker — PyHipster / Python stack (`pyhipsterWorker.enabled`) |
-| mcp-worker | `quay.io/maximilianopizarro/jhipster-online-mcp-worker:2.41.1-mcp-worker` | 8083 | HTTP worker — Node MCP sidecar (`POST /generate`, `/preview`; `mcpWorker.enabled`) |
+| mcp-worker | `quay.io/maximilianopizarro/jhipster-online-mcp-worker:2.41.1-mcp-worker` | 8083 | HTTP worker — Node MCP sidecar (`POST /generate`, `/preview`; `mcpWorker.enabled`, default **true**) |
 | mariadb | `registry.redhat.io/rhel8/mariadb-103` | 3306 | Persistent database |
 | AI models | KServe InferenceServices in `sandbox-shared-models` | 8443 | vLLM OpenAI-compatible endpoints |
 
@@ -129,7 +129,7 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 |-------|-----|---------|
 | `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker` | `2.41.1-jhipster8-worker` | generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; invoked by main app when `jhipster8Worker.enabled=true` |
 | `quay.io/maximilianopizarro/jhipster-online-pyhipster-worker` | `2.41.1-pyhipster-worker` | PyHipster / Python Flask worker HTTP API; invoked when `pyhipsterWorker.enabled=true` |
-| `quay.io/maximilianopizarro/jhipster-online-mcp-worker` | `2.41.1-mcp-worker` | Node MCP worker HTTP API (`POST /generate`, `/preview`); invoked when `mcpWorker.enabled=true` |
+| `quay.io/maximilianopizarro/jhipster-online-mcp-worker` | `2.41.1-mcp-worker` | Node MCP worker HTTP API (`POST /generate`, `/preview`); deployed when `mcpWorker.enabled` (**true** by default since chart **1.1.3**) |
 
 **Registry**: `quay.io/maximilianopizarro/jhipster-online` (main app), `jhipster-online-jhipster8-worker`, `jhipster-online-pyhipster-worker`, and `jhipster-online-mcp-worker` as needed.
 
@@ -178,6 +178,7 @@ Runs **generator-pyhipster@0.0.9** on Node 18 (Yeoman 5), separate from the JH8 
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
+| **1.1.3** | 2.41.1 | **`mcpWorker.enabled: true` by default** (MCP Deployment + Service + env on main app); same images as 1.1.2 |
 | **1.1.2** | 2.41.1 | App **2.41.1** image tags; optional **`mcpWorker`** (Node MCP HTTP worker, port **8083**, default `enabled: false`) — Deployment + Service + `APPLICATION_MCPWORKER_*` on main app |
 | **1.1.1** | 2.41.0 | App **2.41.0** image tags (`2.41.0-quarkus` / spring-boot / jhipster8-worker / pyhipster-worker); same chart layout as 1.1.0; docs **stack compatibility matrix** aligned with upstream ARCHITECTURE.md; v2.41.0 app highlights (Rust/SQLite, podman-compose local stack) |
 | **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** + **PyHipster worker** (`pyhipsterWorker`, default **on**); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** + `MaxRAMPercentage` 65; **Developer Sandbox defaults** (Route, RBAC `edit`, JDL AI); Helm deploy `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI |
@@ -197,11 +198,11 @@ helm repo add jhipster-online https://maximilianopizarro.github.io/jhipster-onli
 
 # Install (latest)
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.2 -n <your-namespace>
+  --version 1.1.3 -n <your-namespace>
 
 # With AI models token
 helm install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.2 -n <your-namespace> \
+  --version 1.1.3 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -227,7 +228,7 @@ oc project <your-dev-namespace>
 
 helm repo update
 helm upgrade --install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.2 -n <your-dev-namespace> \
+  --version 1.1.3 -n <your-dev-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
@@ -341,20 +342,20 @@ Default port, timeout, replicas, and image match [values.yaml](values.yaml).
 
 ### MCP Worker
 
-The **MCP worker** is a separate **Node** HTTP service (default port **8083**, probes on **`GET /health`**) exposing **`POST /generate`** and **`POST /preview`** for MCP-oriented generation flows. Default **`mcpWorker.enabled: false`** in [values.yaml](values.yaml); when enabled, the chart deploys **Deployment** and **ClusterIP Service** `<Helm release name>-mcp-worker` (selector `app.kubernetes.io/component: mcp-worker`) and injects into the **main** `jhipster-online` container:
+The **MCP worker** is a separate **Node** HTTP service (default port **8083**, probes on **`GET /health`**) exposing **`POST /generate`** and **`POST /preview`** for MCP-oriented generation flows. By default **`mcpWorker.enabled: true`** in [values.yaml](values.yaml) (since chart **1.1.3**); the chart deploys **Deployment** and **ClusterIP Service** `<Helm release name>-mcp-worker` (selector `app.kubernetes.io/component: mcp-worker`) and injects into the **main** `jhipster-online` container:
 
 - `APPLICATION_MCPWORKER_ENABLED=true`
 - `APPLICATION_MCPWORKER_BASE_URL=http://<fullname>-mcp-worker:<mcpWorker.port>` (same DNS pattern as JH8 / PyHipster: `fullname` from `include "jhipster-online.fullname" .`)
 - `APPLICATION_MCPWORKER_TIMEOUT_SECONDS` from `mcpWorker.timeoutSeconds`
 
-Requires a **JHipster Online 2.41.1+** application build that calls the worker and a published image (default `quay.io/maximilianopizarro/jhipster-online-mcp-worker:2.41.1-mcp-worker`). Enable with:
+Requires a **JHipster Online 2.41.1+** application build that calls the worker and a published image (default `quay.io/maximilianopizarro/jhipster-online-mcp-worker:2.41.1-mcp-worker`). To **disable** (save Sandbox quota or if the image is not ready):
 
 ```yaml
 mcpWorker:
-  enabled: true
+  enabled: false
 ```
 
-Or: `helm upgrade --install ... --set mcpWorker.enabled=true`.
+Or: `helm upgrade --install ... --set mcpWorker.enabled=false`.
 
 #### Developer Sandbox pod count (optional workers)
 
@@ -362,8 +363,8 @@ Base workload is **2** pods (main `jhipster-online` + `mariadb`). Each enabled w
 
 | `jhipster8Worker.enabled` | `pyhipsterWorker.enabled` | `mcpWorker.enabled` | Approx. pods (incl. MariaDB) |
 |---------------------------|---------------------------|---------------------|-----------------------------|
-| true (**default**) | true (**default**) | false (**default**) | **4** |
-| true | true | true | **5** |
+| true (**default**) | true (**default**) | true (**default**, chart **≥ 1.1.3**) | **5** |
+| true (**default**) | true (**default**) | false | **4** |
 | true | false | false | **3** |
 | true | false | true | **4** |
 | false | true | false | **3** |
@@ -439,7 +440,7 @@ All models are served via **KServe + RHAIIS (vLLM)** in the `sandbox-shared-mode
 
 ```bash
 helm upgrade --install jhipster-online jhipster-online/jhipster-online \
-  --version 1.1.2 -n <your-namespace> \
+  --version 1.1.3 -n <your-namespace> \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 

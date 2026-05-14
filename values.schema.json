@@ -491,11 +491,11 @@
         },
         "mcpWorker": {
             "type": "object",
-            "description": "Optional Node MCP HTTP worker (port 8083); main app uses APPLICATION_MCPWORKER_* when enabled (default false)",
+            "description": "Optional Node MCP HTTP worker (port 8083); main app uses APPLICATION_MCPWORKER_* when enabled (defaults to true in values.yaml)",
             "properties": {
                 "enabled": {
                     "type": "boolean",
-                    "description": "Deploy mcp-worker Deployment + Service and wire main app via APPLICATION_MCPWORKER_*"
+                    "description": "Deploy mcp-worker Deployment + Service and wire main app via APPLICATION_MCPWORKER_* (defaults to true in values.yaml)"
                 },
                 "port": {
                     "type": "integer",

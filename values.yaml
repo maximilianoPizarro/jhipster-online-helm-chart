@@ -284,10 +284,10 @@ pyhipsterWorker:
 # -----------------------------------------------------------------------------
 # MCP HTTP worker (Node): optional sidecar workload on port 8083 (POST /generate, /preview).
 # When enabled, deploys Deployment + Service and sets APPLICATION_MCPWORKER_* on the main app.
-# Default off — enable when the app image supports MCP delegation and the worker image is published.
+# Default on (same pattern as JH8 / PyHipster workers). Set enabled: false to save quota or if the image is unavailable.
 # -----------------------------------------------------------------------------
 mcpWorker:
-  enabled: false
+  enabled: true
   port: 8083
   timeoutSeconds: 120
   replicas: 1
