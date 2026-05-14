@@ -163,7 +163,7 @@ Runs **generator-pyhipster@0.0.9** on Node 18 (Yeoman 5), separate from the JH8 
 |-------|-----------|---------------|
 | Python | generator-pyhipster@0.0.9 | `pyhipster` |
 
-**Not supported:** Go (`generator-jhipster-go@1.0.0` on npm is an empty placeholder). See upstream [go-rust-experimental.md](https://github.com/redhat-developer-demos/jhipster-online/blob/main/src/main/kubernetes/go-rust-experimental.md) for experimental OpenShift notes on Go/Rust/Python.
+**Not supported:** Go (`generator-jhipster-go@1.0.0` on npm is an empty placeholder). For Rust / Python / experimental stack notes, see upstream [ARCHITECTURE.md](https://github.com/redhat-developer-demos/jhipster-online/blob/main/ARCHITECTURE.md).
 
 ---
 
