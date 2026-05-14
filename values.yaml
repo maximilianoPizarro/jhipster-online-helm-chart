@@ -251,118 +251,21 @@ env:
   APPLICATION_JDL_AI_MODELS_2_API_URL: "https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1/chat/completions"
   # Bearer token for model auth — set via --set-string at install time: --set-string env.APPLICATION_JDL_AI_API_KEY="$(oc whoami -t)"
   APPLICATION_JDL_AI_API_KEY: ""
-  # Multi-stack CLI map: .NET uses a different binary; all other stacks default to "jhipster".
-  APPLICATION_JHIPSTER_COMMANDS_BY_STACK_DOTNET: "jhipster-dotnetcore"
 
 # -----------------------------------------------------------------------------
-# Multi-stack generator profile.
-# "single" = only the main Deployment generates apps (default for Developer Sandbox).
-# "multi"  = enable per-stack worker Deployments below (requires more pods/resources).
+# JHipster 8 HTTP worker: generator-jhipster@8.11 + dotnet / nodejs / azure-container-apps blueprints.
+# When enabled, deploys a second Deployment + Service and sets env on the main app to delegate
+# those stacks (.NET, Node/NestJS, Azure Container Apps). Main pod stays on JH9 (Quarkus/Spring Boot).
+# Developer Sandbox: adds 1 pod (+1 vs main+MariaDB only). Set enabled: false to save quota.
 # -----------------------------------------------------------------------------
-generatorProfile: single
-defaultStack: quarkus
-
-# -----------------------------------------------------------------------------
-# Optional per-stack worker Deployments (CLI backend only — no UI, no JDL Studio sidecar).
-# Each enabled worker creates a Deployment + ClusterIP Service sharing the same MariaDB
-# and env vars as the main pod, with APPLICATION_JHIPSTER-CMD_CMD overridden per stack.
-# Workers prepare for future app-side HTTP routing (routing.mode: http); today the main
-# pod runs CLI locally (routing.mode: local-process).
-#
-# Developer Sandbox: ~7 pods max. Default = 0 workers (main + MariaDB = 2 pods).
-# Safe to enable 1-2 workers (4-5 pods). Enabling all exceeds Sandbox limits.
-# -----------------------------------------------------------------------------
-workers:
-  springBoot:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-online
-      tag: "2.40.1-spring-boot"
-    generatorCmd: jhipster
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
-  micronaut:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-online
-      tag: "2.40.1-quarkus"
-    generatorCmd: jhipster
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
-  dotnet:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-builder-dotnet
-      tag: "2.40.1"
-    generatorCmd: jhipster-dotnetcore
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
-  azureAca:
-    enabled: false
-    replicas: 0
-    image: {}
-    generatorCmd: jhipster
-    resources: {}
-  node:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-builder-node
-      tag: "2.40.1"
-    generatorCmd: jhipster
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
-  go:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-builder-go
-      tag: "2.40.1"
-    generatorCmd: jhipster
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
-  rust:
-    enabled: false
-    replicas: 1
-    image:
-      repository: quay.io/maximilianopizarro/jhipster-builder-rust
-      tag: "2.40.1"
-    generatorCmd: jhipster
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "50m"
-      limits:
-        memory: "1024Mi"
-        cpu: "500m"
+jhipster8Worker:
+  enabled: true
+  port: 8081
+  timeoutSeconds: 600
+  replicas: 1
+  image:
+    repository: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker
+    tag: "2.40.1-jhipster8-worker"
 
 #global:
 #  security:

@@ -420,55 +420,38 @@
                 "APPLICATION_JDL_AI_API_KEY": {
                     "type": "string",
                     "description": "Bearer token for model authentication (use --set-string at install)"
-                },
-                "APPLICATION_JHIPSTER_COMMANDS_BY_STACK_DOTNET": {
-                    "type": "string",
-                    "description": "CLI binary for .NET stack (jhipster-dotnetcore); other stacks default to jhipster"
                 }
             }
         },
-        "generatorProfile": {
-            "type": "string",
-            "description": "Generator deployment profile: 'single' (main pod only) or 'multi' (enable workers)",
-            "enum": ["single", "multi"]
-        },
-        "defaultStack": {
-            "type": "string",
-            "description": "Default stack for the main Deployment (matches image.tag)"
-        },
-        "workers": {
+        "jhipster8Worker": {
             "type": "object",
-            "description": "Optional per-stack worker Deployments (CLI backend only, no UI). Each worker shares MariaDB and env vars with the main pod.",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "enabled": {
-                        "type": "boolean",
-                        "description": "Enable this worker Deployment"
-                    },
-                    "replicas": {
-                        "type": "integer",
-                        "description": "Number of replicas for this worker",
-                        "minimum": 0
-                    },
-                    "image": {
-                        "type": "object",
-                        "properties": {
-                            "repository": {
-                                "type": "string"
-                            },
-                            "tag": {
-                                "type": "string"
-                            }
+            "description": "Optional JHipster 8 HTTP worker for .NET, Node/NestJS, and Azure Container Apps generation",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Deploy jhipster8-worker Deployment + Service and wire main app via APPLICATION_JHIPSTER8WORKER_*"
+                },
+                "port": {
+                    "type": "integer",
+                    "description": "HTTP port for the worker container and Service (must match worker image listen port)"
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "description": "Client timeout for delegating generation to the worker"
+                },
+                "replicas": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
                         }
-                    },
-                    "generatorCmd": {
-                        "type": "string",
-                        "description": "JHipster CLI command for this stack (e.g. jhipster, jhipster-dotnetcore)"
-                    },
-                    "resources": {
-                        "type": "object",
-                        "description": "CPU/memory requests and limits for this worker"
                     }
                 }
             }

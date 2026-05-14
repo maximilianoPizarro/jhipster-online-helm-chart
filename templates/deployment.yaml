@@ -59,6 +59,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          {{- if .Values.jhipster8Worker.enabled }}
+            - name: APPLICATION_JHIPSTER8WORKER_ENABLED
+              value: "true"
+            - name: APPLICATION_JHIPSTER8WORKER_BASE_URL
+              value: {{ printf "http://%s-jhipster8-worker:%v" (include "jhipster-online.fullname" .) (.Values.jhipster8Worker.port | int) | quote }}
+            - name: APPLICATION_JHIPSTER8WORKER_TIMEOUT_SECONDS
+              value: "{{ .Values.jhipster8Worker.timeoutSeconds }}"
+          {{- end }}
           ports:
             - name: jhipster-online
               containerPort: {{ .Values.service.port }}

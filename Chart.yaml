@@ -1,19 +1,15 @@
 apiVersion: v2
 name: jhipster-online
 description: >-
-  Helm chart for JHipster Online on Red Hat OpenShift (application 2.40.1) with
-  multi-stack generator support (8 stacks: Spring Boot, Quarkus, Micronaut, .NET,
-  Azure ACA, Node/NestJS, Go, Rust). Default single-stack profile deploys Quarkus;
-  optional per-stack worker Deployments (CLI backend only) can be enabled for
-  dedicated generation pods. Includes generator-jhipster 9.0.0,
-  generator-jhipster-quarkus 4.0.0, a JDL Studio sidecar, MariaDB, an OpenShift
-  Route, and optional in-cluster deploy RBAC. Runtime images on Quay (tags
-  2.40.1-quarkus / 2.40.1-spring-boot) match upstream Dockerfiles: UBI8 OpenJDK 21,
-  Node 22.19, Maven 3.9.15, WAR at /deployments/jhonline.war. JDL AI supports
-  lexical and optional semantic RAG plus configurable HTTP timeouts. Default
-  values.yaml targets Red Hat Developer Sandbox (Route, edit RBAC, in-cluster deploy,
-  shared-model JDL AI URLs). Workers share the same MariaDB and env vars; each uses
-  a stack-specific image with the matching JHipster generator pre-installed.
+  Helm chart for JHipster Online on Red Hat OpenShift (application 2.40.1).
+  Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with optional
+  JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET, Node/NestJS,
+  Azure Container Apps). When jhipster8Worker.enabled, a second Deployment + ClusterIP
+  Service exposes generator-jhipster@8.11; the main app delegates via
+  APPLICATION_JHIPSTER8WORKER_* env vars. Includes JDL Studio sidecar, MariaDB,
+  OpenShift Route, optional in-cluster deploy RBAC, and JDL AI. Runtime images on
+  Quay (2.40.1-quarkus / 2.40.1-spring-boot): UBI8 OpenJDK 21, Node 22.19, Maven 3.9.15,
+  WAR at /deployments/jhonline.war. Default values target Red Hat Developer Sandbox.
 
 # OpenShift 4.12+ ships Kubernetes 1.25; Developer Sandbox and current OCP are well above this floor.
 kubeVersion: ">=1.25.0-0"
@@ -39,10 +35,8 @@ keywords:
   - quarkus
   - jdl-ai
   - vllm
-  - multi-stack
+  - jhipster8
   - dotnet
-  - micronaut
-  - nodejs
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
@@ -80,16 +74,10 @@ annotations:
       image: quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus
     - name: jhipster-online-spring-boot
       image: quay.io/maximilianopizarro/jhipster-online:2.40.1-spring-boot
+    - name: jhipster8-worker
+      image: quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.40.1-jhipster8-worker
     - name: jdl-studio
       image: quay.io/maximilianopizarro/jdl-studio:latest
-    - name: jhipster-builder-dotnet
-      image: quay.io/maximilianopizarro/jhipster-builder-dotnet:2.40.1
-    - name: jhipster-builder-node
-      image: quay.io/maximilianopizarro/jhipster-builder-node:2.40.1
-    - name: jhipster-builder-go
-      image: quay.io/maximilianopizarro/jhipster-builder-go:2.40.1
-    - name: jhipster-builder-rust
-      image: quay.io/maximilianopizarro/jhipster-builder-rust:2.40.1
   artifacthub.io/links: |
     - name: Source (Application)
       url: https://github.com/redhat-developer-demos/jhipster-online

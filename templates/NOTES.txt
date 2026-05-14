@@ -28,17 +28,10 @@
 3. Kuadrant: HTTPRoute {{ include "jhipster-online.fullname" . }}-http — verify gateway refs (kuadrant.gateway.name/namespace) and hostnames match your environment.
 {{- end }}
 
-4. Multi-stack workers:
-{{- $workerCount := 0 }}
-{{- range $name, $worker := .Values.workers }}
-{{- if and $worker.enabled (gt (int $worker.replicas) 0) }}
-{{- $workerCount = add $workerCount 1 }}
-   - {{ $name }}: {{ $worker.replicas }} replica(s) — {{ $worker.image.repository }}:{{ $worker.image.tag }}
-{{- end }}
-{{- end }}
-{{- if eq (int $workerCount) 0 }}
-   No workers enabled (generatorProfile: {{ .Values.generatorProfile }}). Main pod handles all generation.
-{{- end }}
-{{- if gt (int $workerCount) 3 }}
-   WARNING: {{ $workerCount }} workers enabled — this may exceed Developer Sandbox pod limits (~7 pods).
+4. JHipster 8 worker:
+{{- if .Values.jhipster8Worker.enabled }}
+   Enabled — Deployment/Service {{ include "jhipster-online.fullname" . }}-jhipster8-worker (port {{ .Values.jhipster8Worker.port }}). Main app delegates .NET / Node / Azure ACA stacks via APPLICATION_JHIPSTER8WORKER_*.
+   Developer Sandbox: this adds one extra pod (in addition to main + MariaDB).
+{{- else }}
+   Disabled (jhipster8Worker.enabled=false). Only the main pod runs generation.
 {{- end }}

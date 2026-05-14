@@ -27,7 +27,7 @@
 - [Configuration](#configuration)
   - [Startup console, JVM, and resources](#startup-console-jvm-and-resources)
   - [Generator Mode (Quarkus / Spring Boot)](#generator-mode-quarkus--spring-boot)
-  - [Multi-stack Workers](#multi-stack-workers)
+  - [JHipster 8 Worker](#jhipster-8-worker)
   - [GitHub OAuth](#github-oauth)
   - [Developer Hub and Dev Spaces](#developer-hub-and-dev-spaces)
   - [JDL AI Assistant (OpenShift AI Models)](#jdl-ai-assistant-openshift-ai-models)
@@ -48,6 +48,7 @@ This Helm chart deploys **JHipster Online 2.40.1** on Red Hat OpenShift. The sta
 - **JHipster Online 2.40.1** — web UI for generating JHipster applications without local installation
 - **generator-jhipster 9.0.0** — generates Spring Boot 3.4+ / Java 21 projects
 - **generator-jhipster-quarkus 4.0.0** — generates Quarkus projects (JH9-compatible)
+- **JHipster 8 HTTP worker** (optional, default **on**) — separate Deployment with generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; main app delegates those stacks via `APPLICATION_JHIPSTER8WORKER_*` (see [JHipster 8 Worker](#jhipster-8-worker))
 - **JDL Studio** — visual editor for JHipster Domain Language models (sidecar on port 8081)
 - **JDL AI Assistant** — AI-assisted JDL drafting with RAG, powered by in-cluster vLLM models (Granite, Nemotron, Qwen)
 - **Editor AI** — in-app assist for **Helm YAML** and **JDL** (complete, explain, fix, generate-from-prompt) via `/api/editor-ai/*`; uses the **same** `APPLICATION_JDL_AI_*` settings and API key as JDL AI ([upstream](https://github.com/redhat-developer-demos/jhipster-online))
@@ -73,7 +74,8 @@ Source application: [redhat-developer-demos/jhipster-online](https://github.com/
 | Component | Image | Port | Purpose |
 |-----------|-------|------|---------|
 | jhipster-online | `quay.io/maximilianopizarro/jhipster-online:2.40.1-quarkus` | 8080 | Spring Boot app — generation, Git push, Fabric8 deploy, JDL AI |
-| jdl-studio | `quay.io/maximilianopizarro/jdl-studio` | 8081 | nginx sidecar serving JDL Studio UI |
+| jdl-studio | `quay.io/maximilianopizarro/jdl-studio` | 8081 | nginx sidecar serving JDL Studio UI (same pod as main app) |
+| jhipster8-worker | `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker:2.40.1-jhipster8-worker` | 8081 | HTTP worker — JH8 CLI for .NET, Node/NestJS, Azure ACA (`jhipster8Worker.enabled`) |
 | mariadb | `registry.redhat.io/rhel8/mariadb-103` | 3306 | Persistent database |
 | AI models | KServe InferenceServices in `sandbox-shared-models` | 8443 | vLLM OpenAI-compatible endpoints |
 
@@ -84,8 +86,10 @@ The chart creates the following OpenShift resources:
 | Resource | Name | Condition |
 |----------|------|-----------|
 | Deployment | `jhipster-online` (2 containers) | Always |
+| Deployment | `jhipster-online-jhipster8-worker` | `jhipster8Worker.enabled=true` |
 | Deployment | `mariadb` | Always |
 | Service | `jhipster-online` (8080) | Always |
+| Service | `jhipster-online-jhipster8-worker` | `jhipster8Worker.enabled=true` |
 | ConfigMap | `nginx-conf` | Always |
 | Route | `jhipster-online` (TLS edge) | `route.enabled=true` |
 | ServiceAccount | per fullname | `serviceAccount.create=true` |
@@ -105,16 +109,13 @@ Runtime images are published via GitHub Actions to **Quay.io**:
 | `2.40.1-quarkus` (default) | [`Dockerfile.quarkus`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.quarkus) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22.19** | generator-jhipster 9.0.0 + generator-jhipster-quarkus 4.0.0 |
 | `2.40.1-spring-boot` | [`Dockerfile.spring-boot`](https://github.com/redhat-developer-demos/jhipster-online/blob/main/Dockerfile.spring-boot) | UBI8 **OpenJDK 21** + Maven 3.9.15 + **Node 22.19** | generator-jhipster 9.0.0 |
 
-**Worker / builder images** (used by optional multi-stack workers):
+**JHipster 8 worker image** (HTTP sidecar workload — separate pod from the main app):
 
-| Image | Tag | Base | Stack |
-|-------|-----|------|-------|
-| `quay.io/maximilianopizarro/jhipster-builder-dotnet` | `2.40.1` | UBI8 .NET 8.0 SDK | .NET |
-| `quay.io/maximilianopizarro/jhipster-builder-node` | `2.40.1` | UBI8 Node.js 20 | Node / NestJS |
-| `quay.io/maximilianopizarro/jhipster-builder-go` | `2.40.1` | UBI8 + golang | Go (experimental) |
-| `quay.io/maximilianopizarro/jhipster-builder-rust` | `2.40.1` | Rust 1.85 slim | Rust (experimental) |
+| Image | Tag | Purpose |
+|-------|-----|---------|
+| `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker` | `2.40.1-jhipster8-worker` | generator-jhipster **8.11** + dotnet / nodejs / azure-container-apps blueprints; invoked by main app when `jhipster8Worker.enabled=true` |
 
-**Registry**: `quay.io/maximilianopizarro/jhipster-online` (runtime) and `quay.io/maximilianopizarro/jhipster-builder-*` (workers).
+**Registry**: `quay.io/maximilianopizarro/jhipster-online` (main app) and `quay.io/maximilianopizarro/jhipster-online-jhipster8-worker` (optional worker).
 
 Set `image.tag` in `values.yaml` and match `env.JAVA_APP_JAR` to the WAR path baked into that image (default: `/deployments/jhonline.war`).
 
@@ -126,7 +127,7 @@ Unversioned tags (`:quarkus`, `:spring-boot`, `:latest`) remain pinned to 2.33.0
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.0** | 2.40.1 | **Multi-stack generator** (8 stacks); optional per-stack **worker Deployments** (CLI backend only); `generatorProfile` / `defaultStack` / `workers.*` in values; Quay `2.40.1-*` runtime + builder images; `image.pullPolicy` **Always**; `JAVA_OPTS_APPEND` UTF-8 + `MaxRAMPercentage`; **Developer Sandbox defaults** (Route, RBAC `edit`, in-cluster deploy, JDL AI); Helm deploy via `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI reuses JDL AI config |
+| **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** (optional `jhipster8Worker` Deployment + Service; delegates .NET / Node / Azure ACA to generator-jhipster 8.11); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** memory + `MaxRAMPercentage` 65 (OOM-safe Spring Boot gen); **Developer Sandbox defaults** (Route, RBAC `edit`, in-cluster deploy, JDL AI); Helm deploy via `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI reuses JDL AI config |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
 | 1.0.0 | 2.40.0 | Initial chart for JHipster Online 2.40.0 with JHipster 9 generators |
 | 0.1.0 | 2.33.0 | Legacy chart for JHipster Online 2.33.0 |
@@ -237,72 +238,41 @@ image:
   tag: "2.40.1-spring-boot"
 ```
 
-### Multi-stack Workers
+### JHipster 8 Worker
 
-JHipster Online v2.40.1 supports **8 backend framework stacks**. The main Deployment uses the Quarkus image by default (generates Quarkus + Spring Boot apps). For other stacks, enable optional **worker Deployments** — each is a standalone CLI backend pod with a stack-specific image.
+The main JHipster Online pod runs **JHipster 9** (Quarkus / Spring Boot in the same image via `APPLICATION_JHIPSTER-CMD_CMD` and `image.tag`). Blueprints that are still on **JHipster 8** (.NET, Node/NestJS, Azure Container Apps) run in a **separate Deployment** that exposes a small HTTP API (`/health` for probes). When `jhipster8Worker.enabled` is **true** (default in [values.yaml](values.yaml)):
 
-#### Stack Compatibility Matrix
+- The chart creates **Deployment** and **ClusterIP Service** named `<Helm release name>-jhipster8-worker` (for `--name jhipster-online`, that is `jhipster-online-jhipster8-worker`).
+- The main pod receives:
+  - `APPLICATION_JHIPSTER8WORKER_ENABLED=true`
+  - `APPLICATION_JHIPSTER8WORKER_BASE_URL=http://<fullname>-jhipster8-worker:<port>`
+  - `APPLICATION_JHIPSTER8WORKER_TIMEOUT_SECONDS` from `jhipster8Worker.timeoutSeconds`
 
-| Stack | CLI Command | Worker Image | Status |
-|-------|-------------|--------------|--------|
-| **Quarkus** | `jhipster-quarkus` | `jhipster-online:2.40.1-quarkus` | Default (main pod) — JH9-compatible (quarkus 4.0.0) |
-| **Spring Boot** | `jhipster` | `jhipster-online:2.40.1-spring-boot` | Production-ready — JH9-compatible |
-| **Micronaut** | `jhipster` | `jhipster-online:2.40.1-quarkus` (shared JVM) | JH9-compatible (micronaut 4.0.0) |
-| **Rust** | `jhipster` | `jhipster-builder-rust:2.40.1` | Experimental — JH9-compatible (rust 1.0.0) |
-| **.NET** | `jhipster-dotnetcore` | `jhipster-builder-dotnet:2.40.1` | Disabled in UI (no JH9 npm version yet) |
-| **Node / NestJS** | `jhipster` | `jhipster-builder-node:2.40.1` | Disabled in UI (no JH9 npm version yet) |
-| **Go** | `jhipster` | `jhipster-builder-go:2.40.1` | Disabled in UI (no JH9 npm version yet) |
-| **Azure ACA** | `jhipster` | *(placeholder, no image)* | Placeholder |
+Default worker listen port is **8081** (same numeric port as the JDL Studio **sidecar** on the main pod — they are different pods, so there is no conflict).
 
-See the full [Stack Compatibility Matrix](https://github.com/redhat-developer-demos/jhipster-online/blob/main/ARCHITECTURE.md#stack-compatibility-matrix) in the upstream ARCHITECTURE.md.
-
-#### Enabling Workers
-
-By default all workers are **disabled** (`generatorProfile: single`). To enable specific stacks:
+#### Disable to save Sandbox quota
 
 ```bash
 helm upgrade --install jhipster-online . -n <ns> \
-  --set workers.springBoot.enabled=true \
-  --set workers.dotnet.enabled=true \
+  --set jhipster8Worker.enabled=false \
   --set-string "env.APPLICATION_JDL_AI_API_KEY=$(oc whoami -t)"
 ```
 
 Or in `values.yaml`:
 
 ```yaml
-generatorProfile: multi
-defaultStack: quarkus
-
-workers:
-  springBoot:
-    enabled: true
-  dotnet:
-    enabled: true
+jhipster8Worker:
+  enabled: false
 ```
 
-Each enabled worker creates:
-- **Deployment**: `jhipster-online-worker-<stack>` (single container, no JDL Studio sidecar)
-- **Service**: `jhipster-online-worker-<stack>` (ClusterIP, port 8080, internal only)
+#### Developer Sandbox pod count
 
-Workers share the same MariaDB, env vars, and RBAC as the main pod. The `APPLICATION_JHIPSTER-CMD_CMD` env is overridden per worker with its `generatorCmd` value.
+| Configuration | Approx. pods (incl. MariaDB) |
+|----------------|-----------------------------|
+| `jhipster8Worker.enabled=true` (default) | 3 |
+| `jhipster8Worker.enabled=false` | 2 |
 
-#### Developer Sandbox Limits
-
-| Configuration | Pods | Fits Sandbox (~7 pods) |
-|--------------|------|------------------------|
-| Default (no workers) | 2 (main + MariaDB) | Yes |
-| +1 worker | 3 | Yes |
-| +2 workers | 4 | Yes |
-| +3 workers | 5 | Yes |
-| All 6 workers | 8 | Exceeds limit |
-
-Worker resources are lighter than the main pod: `512Mi`/`50m` requests, `1024Mi`/`500m` limits (vs `768Mi`/`100m`, `1536Mi`/`1` for main).
-
-#### How It Works
-
-Today, `routing.mode: local-process` means the main pod runs the JHipster CLI locally. Workers are **infrastructure preparation** for future HTTP routing where the main pod delegates generation requests to the correct worker by stack. Each worker pod independently shares the database and can generate apps for its stack via the same REST API.
-
-For the generated apps' per-stack Tekton pipelines, BuildConfigs, and deployment templates, see [docs/MULTI_STACK_OPENSHIFT.md](https://github.com/redhat-developer-demos/jhipster-online/blob/main/docs/MULTI_STACK_OPENSHIFT.md).
+The worker image uses `imagePullPolicy: IfNotPresent`. Tune `jhipster8Worker.replicas` and worker image resources in your fork if you need HA or heavier generations.
 
 ### GitHub OAuth
 
