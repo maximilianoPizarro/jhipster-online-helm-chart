@@ -29,7 +29,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.41.1
-    created: "2026-05-14T13:25:08.3550407-03:00"
+    created: "2026-05-14T16:39:42.997377-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.41.1). Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with
       optional JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET,
@@ -44,7 +44,7 @@ entries:
       Runtime images on Quay (2.41.1-quarkus / 2.41.1-spring-boot): UBI8 OpenJDK 21,
       Node 22.19, Maven 3.9.15, WAR at /deployments/jhonline.war. Default values target
       Red Hat Developer Sandbox.'
-    digest: d07af35b1715ea07b0906c5588f19f6ad89fa176a78f32d44502dab600cb52c7
+    digest: 3fb46114469cc5f64ea0c6553e79c1a4ada181893a1d670da3c4b430374b3d0f
     home: https://maximilianopizarro.github.io/jhipster-online-helm-chart/
     icon: https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/rethat-jhipster.png
     keywords:
@@ -69,7 +69,7 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.1.2.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.1.2.tgz
     version: 1.1.2
   - annotations:
       artifacthub.io/containsSecurityUpdates: "true"
@@ -97,7 +97,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.41.0
-    created: "2026-05-14T13:25:08.3464325-03:00"
+    created: "2026-05-14T16:39:42.9901166-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.41.0). Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with
       optional JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET,
@@ -133,7 +133,7 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.1.1.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.1.1.tgz
     version: 1.1.1
   - annotations:
       artifacthub.io/containsSecurityUpdates: "true"
@@ -161,7 +161,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.1
-    created: "2026-05-14T13:25:08.3131479-03:00"
+    created: "2026-05-14T16:39:42.9766072-03:00"
     description: 'Helm chart for JHipster Online on Red Hat OpenShift (application
       2.40.1). Main pod runs JHipster 9 (Quarkus / Spring Boot via image tag) with
       optional JHipster 8 HTTP worker for stacks that still use JH8 blueprints (.NET,
@@ -197,7 +197,7 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.1.0.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.1.0.tgz
     version: 1.1.0
   - annotations:
       artifacthub.io/containsSecurityUpdates: "false"
@@ -221,7 +221,7 @@ entries:
       charts.openshift.io/supportURL: https://github.com/maximilianoPizarro/jhipster-online-helm-chart/issues
     apiVersion: v2
     appVersion: 2.40.0
-    created: "2026-05-14T13:25:08.3030647-03:00"
+    created: "2026-05-14T16:39:42.9625921-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - generator-jhipster 9.0.0 for Spring Boot projects (JHipster Online 2.40.0).
       - generator-jhipster-quarkus 3.6.0 for Quarkus projects. - JDL Studio for add
@@ -247,13 +247,13 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-1.0.4.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-1.0.4.tgz
     version: 1.0.4
   - annotations:
       charts.openshift.io/name: JHipster Online
     apiVersion: v2
     appVersion: 2.33.0
-    created: "2026-05-14T13:25:08.2901687-03:00"
+    created: "2026-05-14T16:39:42.9491076-03:00"
     description: 'Stack with JHipster Online on Red Hat OpenShift. This Artifact include:
       - JHipster 8.8.0. for generate Spring Boot 3.4.1 projects. - generator-jhipster-quarkus
       3.4.0 for generate Quarkus 3.11.1 projects. - JDL Studio for add JDL models
@@ -276,6 +276,6 @@ entries:
     - https://github.com/redhat-developer-demos/jhipster-online
     type: application
     urls:
-    - https://maximilianopizarro.github.io/jhipster-online-helm-chart/charts/jhipster-online-0.1.0.tgz
+    - https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/main/charts/jhipster-online-0.1.0.tgz
     version: 0.1.0
-generated: "2026-05-14T13:25:08.2826524-03:00"
+generated: "2026-05-14T16:39:42.9412492-03:00"

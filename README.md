@@ -63,8 +63,9 @@ This Helm chart deploys **JHipster Online 2.41.1** on Red Hat OpenShift. The sta
 - **Cluster requirement** — Kubernetes **≥ 1.25** (OpenShift **4.12+**); see `kubeVersion` in [Chart.yaml](Chart.yaml).
 - **Developer Sandbox defaults** — a single [values.yaml](values.yaml): Route on, RBAC `edit` for the pod ServiceAccount, in-cluster deploy enabled, JDL AI URLs for `sandbox-shared-models`; set `env.APPLICATION_JDL_AI_API_KEY` at install (e.g. `oc whoami -t`). For other clusters, turn those off in the same file (see [RBAC for In-Cluster Deploy](#rbac-for-in-cluster-deploy)).
 - **Runtime image (upstream)** — [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online) `Dockerfile.quarkus` / `Dockerfile.spring-boot`: **UBI8 OpenJDK 21**, **Node 22.19**, **Maven 3.9.15**, WAR at `/deployments/jhonline.war`.
+- **v2.41.1 highlights** — **MCP Server Generator** UI at **`/generate-mcp-server`** (form-driven config, live preview, JDL → MCP tools AI); **dark mode** with CSS custom properties and navbar toggle (`ThemeService` + `prefers-color-scheme`); **backend framework statistics** (new `backend_framework` column, line/pie charts for Spring Boot, Quarkus, Micronaut, Rust, .NET, etc.); **client framework** aggregation fixes (Svelte, "No client"); **roadmap** (Quarkus backend migration, OIDC login, Fabric8 MCP pipelines). See upstream [RELEASE-NOTES-2.41.1](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.41.1.md).
 - **v2.41.0 highlights** — local full stack via `podman-compose.yml` + `Dockerfile.local`; Rust generator improvements (SQLite, `StackProfileResolver` for `backendFramework: rust`, H2→SQLite coercion in `.yo-rc.json` shim). See upstream [README — New Features in v2.41.0](https://github.com/redhat-developer-demos/jhipster-online#new-features-in-v2410).
-- **Chart 1.1.2 / app 2.41.1** — **MCP worker** (Node, port **8083**, `mcpWorker.enabled` **true** by default), **`mariadb.enabled`** for in-cluster MariaDB (**true** by default; set `false` and override `env.SPRING_DATASOURCE_*` for an external database), **2.41.1-*** runtime images.
+- **Chart 1.1.2 / app 2.41.1** — **MCP worker** (Node, port **8083**, `mcpWorker.enabled` **true** by default), **`mariadb.enabled`** for in-cluster MariaDB (**true** by default; set `false` and override `env.SPRING_DATASOURCE_*` for an external database), **Route timeout** `120s` annotation (aligned with `mcpWorker.timeoutSeconds`), **2.41.1-*** runtime images.
 
 Source application: [redhat-developer-demos/jhipster-online](https://github.com/redhat-developer-demos/jhipster-online)
 
@@ -179,7 +180,7 @@ Runs **generator-pyhipster@0.0.9** on Node 18 (Yeoman 5), separate from the JH8 
 
 | Chart Version | App Version | Key Changes |
 |---------------|-------------|-------------|
-| **1.1.2** | 2.41.1 | App **2.41.1** image tags; **MCP worker** (port 8083, `mcpWorker.enabled` **true** by default) + `APPLICATION_MCPWORKER_*`; **`mariadb.enabled`** (**true** by default) for bundled MariaDB or external DB via `env` overrides |
+| **1.1.2** | 2.41.1 | App **2.41.1** image tags; **MCP worker** (port 8083, `mcpWorker.enabled` **true** by default) + `APPLICATION_MCPWORKER_*`; **`mariadb.enabled`** (**true** by default) for bundled MariaDB or external DB via `env` overrides; Route **`haproxy.router.openshift.io/timeout: 120s`** to prevent 504s on AI/model cold starts |
 | **1.1.1** | 2.41.0 | App **2.41.0** image tags (`2.41.0-quarkus` / spring-boot / jhipster8-worker / pyhipster-worker); same chart layout as 1.1.0; docs **stack compatibility matrix** aligned with upstream ARCHITECTURE.md; v2.41.0 app highlights (Rust/SQLite, podman-compose local stack) |
 | **1.1.0** | 2.40.1 | **JHipster 8 HTTP worker** + **PyHipster worker** (`pyhipsterWorker`, default **on**); main app JH9 + Quarkus 4.0.0; `image.pullPolicy` **Always**; main container **2Gi** + `MaxRAMPercentage` 65; **Developer Sandbox defaults** (Route, RBAC `edit`, JDL AI); Helm deploy `OPENSHIFT_USE_HELM_CLI` / `OPENSHIFT_HELM_*`; Editor AI |
 | **1.0.4** | 2.40.0 | JDL AI assistant with 3 sandbox models, startupProbe, jdl-studio probes, Kuadrant policies, RBAC RoleBinding |
@@ -348,6 +349,8 @@ The **MCP worker** is a separate **Node** HTTP service (default port **8083**, p
 - `APPLICATION_MCPWORKER_BASE_URL=http://<fullname>-mcp-worker:<mcpWorker.port>` (same DNS pattern as JH8 / PyHipster: `fullname` from `include "jhipster-online.fullname" .`)
 - `APPLICATION_MCPWORKER_TIMEOUT_SECONDS` from `mcpWorker.timeoutSeconds`
 
+The application exposes the **MCP Server Generator** page at **`/generate-mcp-server`**: form-driven configuration, live file preview tree from the worker, optional extra tool file slot, and **JDL → MCP tools** AI generation via the same OpenAI-compatible backend as the JDL AI assistant.
+
 Requires a **JHipster Online 2.41.1+** application build that calls the worker and a published image (default `quay.io/maximilianopizarro/jhipster-online-mcp-worker:2.41.1-mcp-worker`). To **disable** (save Sandbox quota or if the image is not ready):
 
 ```yaml
@@ -384,6 +387,8 @@ Base workload is **1** pod (main `jhipster-online`). **+1** if `mariadb.enabled`
 
 \*Assumes `mariadb.enabled=true` (default). With `mariadb.enabled=false`, subtract **1** from the total.
 
+### GitHub OAuth
+
 Go to https://github.com/settings/developers to create an OAuth App:
 
 ```yaml
@@ -396,6 +401,26 @@ env:
 <p align="left">
 <img src="https://raw.githubusercontent.com/maximilianoPizarro/jhipster-online-helm-chart/refs/heads/main/image/sing-repo.PNG" width="900" title="GitHub OAuth">
 </p>
+
+### GitLab / Gitea OAuth
+
+JHipster Online also supports **GitLab** and **Gitea** as Git providers. Configure them with the same `env` pattern:
+
+```yaml
+env:
+  # GitLab
+  APPLICATION_GITLAB_HOST: https://gitlab.com
+  APPLICATION_GITLAB_CLIENT-ID: <your-client-id>
+  APPLICATION_GITLAB_CLIENT-SECRET: <your-client-secret>
+  APPLICATION_GITLAB_REDIRECT-URI: https://<your-jhipster-online-url>/api/gitlab/callback
+  # Gitea
+  APPLICATION_GITEA_HOST: https://gitea.com
+  APPLICATION_GITEA_CLIENT-ID: <your-client-id>
+  APPLICATION_GITEA_CLIENT-SECRET: <your-client-secret>
+  APPLICATION_GITEA_REDIRECT-URI: https://<your-jhipster-online-url>/api/gitea/callback
+```
+
+All three providers (GitHub, GitLab, Gitea) support OAuth login, organization/repo sync, repository creation, push via JGit, and pull request creation. Credentials can also be configured at runtime by admins via **Administration > Git Runtime Config** without restarting the app. See upstream [Gitea configuration](https://github.com/redhat-developer-demos/jhipster-online#gitea-configuration) for full details.
 
 ### Developer Hub and Dev Spaces
 
@@ -565,7 +590,9 @@ For full upstream documentation, see [JDL AI assistant (models, RAG, embeddings)
 
 ### OpenShift Route and Kuadrant
 
-**Route** is enabled by default (`route.enabled: true`). For Kuadrant Gateway API integration:
+**Route** is enabled by default (`route.enabled: true`). The Route template includes `haproxy.router.openshift.io/timeout: "120s"` to prevent **504 Gateway Timeout** errors when AI model endpoints (KServe/vLLM) are slow to respond (e.g. cold starts after idle scaling). This is aligned with `mcpWorker.timeoutSeconds` (120) and `APPLICATION_JDL_AI_READ_TIMEOUT_MS` (120000). For production with faster models, lower the value by editing the Route annotation or the template.
+
+For Kuadrant Gateway API integration:
 
 ```yaml
 kuadrant:
@@ -715,6 +742,8 @@ rm charts/index.yaml
 - [Artifact Hub](https://artifacthub.io/packages/helm/jhipster-online/jhipster-online)
 - [Container Images (Quay.io)](https://quay.io/repository/maximilianopizarro/jhipster-online)
 - [README diagram assets (`image/`)](image/README.md)
+- [Release Notes 2.41.1](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.41.1.md)
+- [Release Notes 2.40.1](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.40.1.md)
 - [Release Notes 2.40.0](https://github.com/redhat-developer-demos/jhipster-online/blob/main/RELEASE-NOTES-2.40.0.md)
 
 Try on Red Hat OpenShift Dev Spaces — search "JHipster Online" in the sample catalog:
